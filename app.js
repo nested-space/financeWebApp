@@ -1,14 +1,14 @@
 #!/usr/bin/env nodemon
 
 const   rp              = require("request-promise"),
-        express         = require("express"),
-        app             = express(),
-        mongoose        = require("mongoose"),
-        Schema          = mongoose.Schema,
-        bodyParser      = require("body-parser"),
-        finance         = require("./modules/expenses.js"),
-        Attrition       = finance.MonthlyAttritionItem,
-        Periodic        = finance.PredictedPeriodicItem;
+    express         = require("express"),
+    app             = express(),
+    mongoose        = require("mongoose"),
+    Schema          = mongoose.Schema,
+    bodyParser      = require("body-parser"),
+    finance         = require("./modules/expenses.js"),
+    Attrition       = finance.MonthlyAttritionItem,
+    Periodic        = finance.PredictedPeriodicItem;
 
 const path = __dirname + '/views/'; // this folder should contain your html files.
 
@@ -63,7 +63,16 @@ app.get("/webDev", (req, res) => {
 app.get("/finance", (req, res) => {
     Attrition.find({}, function(err, budgets) {
         if (!err){
-            res.render("portfolio/finance/finance_summary", {budgets: budgets});
+            Periodic.find({}, (error, periodics) => {
+                if(!error){
+                    res.render("portfolio/finance/finance_summary", {
+                        budgets: budgets,
+                        periodics: periodics
+                    });
+                } else {
+                    throw error;
+                }
+            });
         } else {
             throw err;
         }
