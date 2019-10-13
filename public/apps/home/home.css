@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto+Mono:300,500');
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    min-width: 100vw;
+    background-color: rgba(67, 67, 67,.87);
+}
+
+div.nested-logo {
+    width: 540px;
+    height: 179px;
+    background-image: url("/apps/img/logo-retina.png");
+    background-size: cover;
+    background-position: center;
+}
+
+@media screen and (max-width: 576px) {
+
+    div.nested-logo {
+    width: 281px;
+    height: 93px;
+    background-image:url("/apps/img/logo-retina-mobile.png");
+  }
+}
+

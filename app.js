@@ -42,9 +42,18 @@ app.use(express.static(__dirname + '/public'));
 //* ------------------------------------------------------------------------------------
 //*                                     PORTFOLIO 
 //* ------------------------------------------------------------------------------------
+app.get("/", (req, res) => {
+    console.log("rendering home!");
+    res.render("home");
+});
 
-app.get("/portfolio/webDev", (req, res) => {
-    res.render("portfolio_webDev");
+app.get("/home", (req, res) => {
+    console.log("rendering home!");
+    res.render("home");
+});
+
+app.get("/webDev", (req, res) => {
+    res.render("portfolio/webDev/webDev");
 });
 
 //* ------------------------------------------------------------------------------------
@@ -54,7 +63,7 @@ app.get("/portfolio/webDev", (req, res) => {
 app.get("/finance", (req, res) => {
     Attrition.find({}, function(err, budgets) {
         if (!err){
-            res.render("finance_summary", {budgets: budgets});
+            res.render("portfolio/finance/finance_summary", {budgets: budgets});
         } else {
             throw err;
         }
@@ -66,7 +75,7 @@ app.get("/finance/add", (req, res) => {
         if (!err){
             Periodic.find({}, (error, periodics) => {
                 if(!error){
-                    res.render("finance_addItems", {
+                    res.render("portfolio/finance/finance_addItems", {
                         budgets: budgets,
                         periodics: periodics
                     });
@@ -99,7 +108,7 @@ app.post("/finance/addOutgoing", (req, res) => {
             console.log(newly);
         }
     });
-    res.redirect("/finance/add");
+    res.redirect("portfolio/finance/finance_addItems");
 });
 
 
@@ -117,7 +126,7 @@ app.post("/finance/addBudget", (req, res) => {
             console.log(newlyCreated)
         }
     });
-    res.redirect("/finance/add");
+    res.redirect("portfolio/finance/finance_addItems");
 });
 
 app.get("*", function(req, res){
