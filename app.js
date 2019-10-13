@@ -1,16 +1,12 @@
 #!/usr/bin/env nodemon
 
-const   rp              = require("request-promise"),
-    express         = require("express"),
-    app             = express(),
-    mongoose        = require("mongoose"),
-    Schema          = mongoose.Schema,
-    bodyParser      = require("body-parser"),
-    finance         = require("./modules/expenses.js"),
-    Attrition       = finance.MonthlyAttritionItem,
-    Periodic        = finance.PredictedPeriodicItem;
-
-const path = __dirname + '/views/'; // this folder should contain your html files.
+const   express         = require("express"),
+        app             = express(),
+        mongoose        = require("mongoose"),
+        bodyParser      = require("body-parser"),
+        finance         = require("./modules/expenses.js"),
+        Attrition       = finance.MonthlyAttritionItem,
+        Periodic        = finance.PredictedPeriodicItem;
 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -30,7 +26,6 @@ const mongooseConnectionString = 'mongodb://localhost:27017/finance?authSource=a
 mongoose.connect(mongooseConnectionString,options);
 mongoose.set("useCreateIndex", true);
 
-
 //* ------------------------------------------------------------------------------------
 //*                                     DEFAULTS
 //* ------------------------------------------------------------------------------------
@@ -43,12 +38,10 @@ app.use(express.static(__dirname + '/public'));
 //*                                     PORTFOLIO 
 //* ------------------------------------------------------------------------------------
 app.get("/", (req, res) => {
-    console.log("rendering home!");
     res.render("home");
 });
 
 app.get("/home", (req, res) => {
-    console.log("rendering home!");
     res.render("home");
 });
 
@@ -108,7 +101,7 @@ app.post("/finance/addOutgoing", (req, res) => {
         quantity: quantity,
         dayOfMonth: day,
         category: category
-    }
+    };
 
     Periodic.create(newOutgoing, (err, newly) => {
         if(err){
@@ -119,7 +112,6 @@ app.post("/finance/addOutgoing", (req, res) => {
     });
     res.redirect("portfolio/finance/finance_addItems");
 });
-
 
 app.post("/finance/addBudget", (req, res) => {
     let name = req.body.budgetName;
@@ -132,7 +124,7 @@ app.post("/finance/addBudget", (req, res) => {
         if(err){
             console.log(err);
         } else {
-            console.log(newlyCreated)
+            console.log(newlyCreated);
         }
     });
     res.redirect("portfolio/finance/finance_addItems");
@@ -144,4 +136,4 @@ app.get("*", function(req, res){
 
 app.listen(3001, process.env.IP, function(){
     console.log("Serving on port 3001");
-})
+});

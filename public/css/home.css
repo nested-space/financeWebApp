@@ -14,7 +14,7 @@ body {
 div.nested-logo {
     width: 540px;
     height: 179px;
-    background-image: url("/apps/img/logo-retina.png");
+    background-image: url("/img/logo-retina.png");
     background-size: cover;
     background-position: center;
 }
@@ -24,7 +24,7 @@ div.nested-logo {
     div.nested-logo {
     width: 281px;
     height: 93px;
-    background-image:url("/apps/img/logo-retina-mobile.png");
+    background-image:url("/img/logo-retina-mobile.png");
   }
 }
 
