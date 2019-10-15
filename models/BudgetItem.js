@@ -2,20 +2,34 @@ const mongoose = require("mongoose"),
       Schema = mongoose.Schema;
 
 const attritionSchema = new Schema({
-    "quantity": Number,
-    "name": String
+    quantity: {
+        type: Number,
+        required: true
+    },
+    name: {
+        type: String,
+        required: true
+    }
 });
 
 const periodicSchema = new Schema({
-    "name": String,
-    "dayOfMonth": Number,
-    "quantity": Number,
-    "cateogry": String
+    name: {
+        type: String,
+        required: true
+    },
+    dayOfMonth: {
+        type: Number,
+        required: true
+    },
+    quantity: {
+        type: Number,
+        required: true
+    },
+    cateogry: {
+        type: String,
+        required: true
+    }
 });
-
-const MonthlyAttritionItem = mongoose.model('monthlyPredictedAttrition', attritionSchema);
-const PredictedPeriodicItem = mongoose.model('monthlyPredictedSetDate', periodicSchema);
-
 
 let categoryQuantities = function(items) {
 
@@ -51,8 +65,8 @@ let getFinanceSummaryData = function(){
 }
 
 module.exports = {
-    MonthlyAttritionItem,
-    PredictedPeriodicItem,
+    MonthlyAttritionItem = mongoose.model('monthlyPredictedAttrition', attritionSchema),
+    PredictedPeriodicItem = mongoose.model('monthlyPredictedSetDate', periodicSchema),
     categoryQuantities,
     getFinanceSummaryData
 };
