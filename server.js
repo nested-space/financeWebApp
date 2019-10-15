@@ -8,8 +8,8 @@ const app = express();
 app.use(bodyParser.urlencoded({extended: true}));
 
 //Models
-const Attrition = require('./models/BudgetItem.js/index.js').finance.MonthlyAttritionItem,
-const Periodic = require('./models/BudgetItem.js/index.js').finance.PredictedPeriodicItem;
+const Attrition = require('./models/BudgetItem.js').MonthlyAttritionItem;
+const Periodic = require('./models/BudgetItem.js').PredictedPeriodicItem;
 
 //Routes
 const finance = require('./routes/www/finance');
@@ -33,7 +33,7 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
 
-app.use('/finance/*', finance);
+app.use('/finance/', finance);
 
 app.get('/', (req, res) => {
     res.render('home');

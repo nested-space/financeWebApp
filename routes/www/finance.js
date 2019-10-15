@@ -7,7 +7,7 @@ const Periodic = require('../../models/BudgetItem').PredictedPeriodicItem;
 // @route GET /finance
 // @desc HTML web page with finance summary
 // @access currently public
-app.get('/', (req, res) => {
+router.get('/', (req, res) => {
     Attrition.find({}, function(err, budgets) {
         if (!err){
             Periodic.find({}, (error, periodics) => {
@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/add', (req, res) => {
+router.get('/add', (req, res) => {
     Attrition.find({}, function(err, budgets) {
         if (!err){
             Periodic.find({}, (error, periodics) => {
@@ -45,7 +45,7 @@ app.get('/add', (req, res) => {
     });
 });
 
-app.post('/addOutgoing', (req, res) => {
+router.post('/addOutgoing', (req, res) => {
     let name = req.body.outgoingName;
     let quantity = req.body.quantity;
     let day = req.body.day;
@@ -67,7 +67,7 @@ app.post('/addOutgoing', (req, res) => {
     res.redirect('/add');
 });
 
-app.post('/addBudget', (req, res) => {
+router.post('/addBudget', (req, res) => {
     let name = req.body.budgetName;
     let quantity = req.body.budgetQuantity;
     let newBudget = {

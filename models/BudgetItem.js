@@ -64,9 +64,13 @@ let getFinanceSummaryData = function(){
     });
 }
 
+const MonthlyAttritionItem = mongoose.model('monthlyPredictedAttrition', attritionSchema);
+const PredictedPeriodicItem = mongoose.model('monthlyPredictedSetDate', periodicSchema);
+
+
 module.exports = {
-    MonthlyAttritionItem = mongoose.model('monthlyPredictedAttrition', attritionSchema),
-    PredictedPeriodicItem = mongoose.model('monthlyPredictedSetDate', periodicSchema),
+    MonthlyAttritionItem,
+    PredictedPeriodicItem,
     categoryQuantities,
     getFinanceSummaryData
 };
