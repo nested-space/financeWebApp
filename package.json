@@ -1,10 +1,11 @@
 {
   "name": "nestedspace",
-  "version": "1.1.0",
+  "version": "0.1.0",
   "description": "Website to showcase portfolio and useful apps for family",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "server": "pm2 start server.js"
   },
   "author": "Ed Eden-Rump",
   "license": "MIT",
@@ -15,10 +16,8 @@
     "chart.js": "^2.8.0",
     "ejs": "^2.7.1",
     "express": "^4.17.1",
-    "jQuery": "^1.7.4",
     "jquery": "^3.4.1",
     "mongoose": "^5.7.1",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.4"
+    "request": "^2.88.0"
   }
 }
