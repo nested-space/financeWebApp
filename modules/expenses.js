@@ -16,7 +16,43 @@ const periodicSchema = new Schema({
 const MonthlyAttritionItem = mongoose.model('monthlyPredictedAttrition', attritionSchema);
 const PredictedPeriodicItem = mongoose.model('monthlyPredictedSetDate', periodicSchema);
 
+
+let categoryQuantities = function(items) {
+
+    //for each item, if category has already been added, increment quantity
+    
+
+
+    //if category has not been added, add category and quantity = quantity
+
+  console.log( "Hello" );
+};
+
+let getFinanceSummaryData = function(){
+    MonthlyAttritionItem.find({}, function(err, budgets) {
+        if (!err){
+            PredictedPeriodicItem.find({}, (error, periodics) => {
+                if(!error){
+                    let summaryData = {
+                        "budgets": budgets,
+                        "periodics": periodics
+                    } 
+                    console.log("Returning Data----------------------");
+                    console.log(summaryData);
+                    return summaryData;
+                } else {
+                    throw error;
+                }
+            });
+        } else {
+            throw err;
+        }
+    });
+}
+
 module.exports = {
     MonthlyAttritionItem,
-    PredictedPeriodicItem
+    PredictedPeriodicItem,
+    categoryQuantities,
+    getFinanceSummaryData
 };

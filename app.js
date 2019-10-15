@@ -8,22 +8,23 @@ const   express         = require("express"),
         Attrition       = finance.MonthlyAttritionItem,
         Periodic        = finance.PredictedPeriodicItem;
 
+
 app.use(bodyParser.urlencoded({extended: true}));
 
 //* ------------------------------------------------------------------------------------
 //*  Mongoose Connection
 //* ------------------------------------------------------------------------------------
 
-const options = {
-    user: "finance",
-    pass: "finance",
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-};
+const options = require("./config/keys.js").mongoOptions; 
+const mongoURI = require("./config/keys.js").mongoURI;
 
-const mongooseConnectionString = 'mongodb://localhost:27017/finance?authSource=admin';
+const mongooseConnectionString = mongoURI;
 
-mongoose.connect(mongooseConnectionString,options);
+mongoose
+    .connect(mongooseConnectionString,options)
+    .then(() => console.log("DB Connected"))
+    .catch((err) => console.log(err));
+
 mongoose.set("useCreateIndex", true);
 
 //* ------------------------------------------------------------------------------------
@@ -77,6 +78,7 @@ app.get("/finance/add", (req, res) => {
         if (!err){
             Periodic.find({}, (error, periodics) => {
                 if(!error){
+                    finance.categoryQuantities({});
                     res.render("portfolio/finance/finance_addItems", {
                         budgets: budgets,
                         periodics: periodics
@@ -110,7 +112,7 @@ app.post("/finance/addOutgoing", (req, res) => {
             console.log(newly);
         }
     });
-    res.redirect("portfolio/finance/finance_addItems");
+    res.redirect("/finance/add");
 });
 
 app.post("/finance/addBudget", (req, res) => {
@@ -118,7 +120,8 @@ app.post("/finance/addBudget", (req, res) => {
     let quantity = req.body.budgetQuantity;
     let newBudget = {
         name: name, 
-        quantity: quantity
+        quantity: quantity,
+        cateogry: category
     };
     Attrition.create(newBudget, function(err, newlyCreated){
         if(err){
@@ -134,6 +137,8 @@ app.get("*", function(req, res){
     res.render("404");
 });
 
-app.listen(3001, process.env.IP, function(){
-    console.log("Serving on port 3001");
+const port = 3001;
+
+app.listen(port, process.env.IP, function(){
+    console.log(`Serving on port ${port}`);
 });
