@@ -1,20 +1,22 @@
 const express         = require('express');
 const router = express.Router();
 
-const Attrition = require('../../models/BudgetItem').MonthlyAttritionItem;
-const Periodic = require('../../models/BudgetItem').PredictedPeriodicItem;
+//Models
+const Budget = require('../../models/FinanceModels.js').Budget;
+const Commitment = require('../../models/FinanceModels.js').Commitment;
 
 // @route GET /finance
 // @desc HTML web page with finance summary
-// @access currently public
+// @access Public
+// TODO: ALTER THIS TO BRING IN DATA ASYNCHRONOUSLY
 router.get('/', (req, res) => {
-    Attrition.find({}, function(err, budgets) {
+    Budget.find({}, function(err, budgets) {
         if (!err){
-            Periodic.find({}, (error, periodics) => {
+            Commitment.find({}, (error, commitments) => {
                 if(!error){
                     res.render('portfolio/finance/finance_summary', {
                         budgets: budgets,
-                        periodics: periodics
+                        commitments: commitments
                     });
                 } else {
                     throw error;
@@ -26,14 +28,18 @@ router.get('/', (req, res) => {
     });
 });
 
-router.get('/add', (req, res) => {
-    Attrition.find({}, function(err, budgets) {
+// @route GET /finance/modify
+// @desc HTML web page to allow user to register new, or edit existing financial information
+// @access Public
+// TODO: ALTER THIS TO BRING DATA IN ASYNCHRONOUSLY
+router.get('/modify', (req, res) => {
+    Budget.find({}, function(err, budgets) {
         if (!err){
-            Periodic.find({}, (error, periodics) => {
+            Commitment.find({}, (error, periodics) => {
                 if(!error){
-                    res.render('portfolio/finance/finance_addItems', {
+                    res.render('portfolio/finance/finance_modify', {
                         budgets: budgets,
-                        periodics: periodics
+                        commitments: commitments
                     });
                 } else {
                     throw error;
@@ -45,45 +51,36 @@ router.get('/add', (req, res) => {
     });
 });
 
+// @route POST /finance/addOutgoing
+// @desc HTML 
+// @access Public
+// TODO: ALTER THIS TO BE PRIVATE
 router.post('/addOutgoing', (req, res) => {
-    let name = req.body.outgoingName;
-    let quantity = req.body.quantity;
-    let day = req.body.day;
-    let category = req.body.category;
-    let newOutgoing = {
-        name: name,
-        quantity: quantity,
-        dayOfMonth: day,
-        category: category
+    const newCommitment = {
+        name: req.body.outgoingName,
+        quantity: req.body.quantity,
+        dayOfMonth: req.body.day,
+        category: req.body.category
     };
 
-    Periodic.create(newOutgoing, (err, newly) => {
-        if(err){
-            console.log(err);
-        } else {
-            console.log(newly);
-        }
-    });
+    newCommitment.save().then(item => res.json(item));
+    
     res.redirect('/add');
 });
 
+// @route POST /finance/addBudget
+// @desc HTML 
+// @access Public
+// TODO: ALTER THIS TO BE PRIVATE
 router.post('/addBudget', (req, res) => {
-    let name = req.body.budgetName;
-    let quantity = req.body.budgetQuantity;
-    let newBudget = {
-        name: name, 
-        quantity: quantity,
-        cateogry: category
+    const newBudget = {
+        name: req.body.budgetName, 
+        quantity: req.body.budgetQuantity,
     };
-    Attrition.create(newBudget, function(err, newlyCreated){
-        if(err){
-            console.log(err);
-        } else {
-            console.log(newlyCreated);
-        }
-    });
+
+    newBudget.save().then(item => res.json(item));
+
     res.redirect('/add');
 });
-
 
 module.exports = router;
