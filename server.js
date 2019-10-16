@@ -7,10 +7,6 @@ const bodyParser      = require('body-parser');
 const app = express();
 app.use(bodyParser.urlencoded({extended: true}));
 
-//Models
-const Attrition = require('./models/BudgetItem.js').MonthlyAttritionItem;
-const Periodic = require('./models/BudgetItem.js').PredictedPeriodicItem;
-
 //Routes
 const finance = require('./routes/www/finance');
 

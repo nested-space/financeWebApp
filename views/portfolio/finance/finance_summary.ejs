@@ -80,7 +80,7 @@
 
     <!--calculate commitments for each category e.g. household utilities  -->
     <%   let categoryCommitments = {};
-         periodics.forEach(function(item) {                           
+         commitments.forEach(function(item) {                           
              if(categoryCommitments.hasOwnProperty(item._doc.category)){  
                  categoryCommitments[item._doc.category] = categoryCommitments[item._doc.category] + item._doc.quantity;
              } else {                                                
@@ -149,7 +149,7 @@
     <%   let totalIncome = 0;
          let totalOutgoings = 0;
 
-         periodics.forEach(function(item) {                           
+         commitments.forEach(function(item) {                           
             if(item._doc.quantity> 0) { %>
          <%      totalIncome += item._doc.quantity;
              } else {
