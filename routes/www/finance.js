@@ -2,8 +2,8 @@ const express         = require('express');
 const router = express.Router();
 
 //Models
-const Budget = require('../../models/FinanceModels.js').Budget;
-const Commitment = require('../../models/FinanceModels.js').Commitment;
+const Budget = require('../../models/Budget.js').Budget;
+const Commitment = require('../../models/Commitment.js').Commitment;
 
 // @route GET /finance
 // @desc HTML web page with finance summary

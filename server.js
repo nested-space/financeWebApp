@@ -8,7 +8,9 @@ const app = express();
 app.use(bodyParser.urlencoded({extended: true}));
 
 //Routes
-const finance = require('./routes/www/finance');
+const www_finance = require('./routes/www/finance');
+const api_budgets = require('./routes/api/budgets');
+const api_commitments = require('./routes/api/commitments');
 
 //Mongo config options
 const options = require('./config/keys.js').mongoOptions; 
@@ -29,7 +31,9 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
 
-app.use('/finance/', finance);
+app.use('/finance/', www_finance);
+app.use('/finance/api/budgets', api_budgets);
+app.use('/finance/api/commitments', api_commitments);
 
 app.get('/', (req, res) => {
     res.render('home');
