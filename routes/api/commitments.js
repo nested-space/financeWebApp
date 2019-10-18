@@ -16,6 +16,7 @@ router.get('/', (req, res) => {
 // @desc        Create a commitment
 // @ access     Public TODO: add authentification
 router.post('/', (req, res) => {
+    console.log(req.body);
     const newCommitment = new Commitment({
         name: req.body.name,
         quantity: req.body.quantity,
@@ -25,7 +26,7 @@ router.post('/', (req, res) => {
 
     newCommitment.save()
       .then(commitment => res.json(commitment));
-}
+});
 
 // @route       DELETE api/commitments
 // @desc        Delete a commitment
@@ -36,5 +37,7 @@ router.delete('/:id', (req, res) => {
         .catch(err => res.status(404).json({ success: false }));
 
 });
+
+//TODO: create GET route for api/budgets/:id to get detail for one item
 
 module.exports = router;

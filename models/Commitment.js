@@ -14,7 +14,7 @@ const commitmentSchema = new Schema({
         type: Number,
         required: true
     },
-    cateogry: {
+    category: {
         type: String,
         required: true
     }

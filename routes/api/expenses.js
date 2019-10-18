@@ -2,35 +2,35 @@ const express         = require('express');
 const router = express.Router();
 
 //Models
-const Budget = require('../../models/Budget.js').Budget;
+const Expense = require('../../models/Expense.js').Expense;
 
-// @route       GET api/budgetItems
-// @desc        Get all budget items
+// @route       GET api/expenses
+// @desc        Get all expenses
 // @ access     Public TODO: improve to filter for user
 router.get('/', (req, res) => {
-    Budget.find().sort({ quantity: -1 })
-      .then(budgets => res.json(budgets))
+    Expense.find().sort({ quantity: -1 })
+      .then(expenses => res.json(expenses))
 });
 
-// @route       POST api/budgets
-// @desc        Create a budget item
+// @route       POST api/expenses
+// @desc        Create an expense
 // @ access     Public TODO: add authentification
 router.post('/', (req, res) => {
-    const newBudget = new Budget({
+    const newExpense = new Expense({
         name: req.body.name,
         quantity: req.body.quantity,
     });
     
-    newBudget.save()
-      .then(budget => res.json(budget));
+    newExpense.save()
+      .then(expense => res.json(expense));
 });
 
-// @route       DELETE api/budgets
-// @desc        Delete a budget item
+// @route       DELETE api/expenses/del
+// @desc        Delete an expense
 // @ access     Public TODO: add authentification
 router.delete('/:id', (req, res) => {
-    Budget.findById(req.params.id)
-        .then(budget => budget.remove().then(() => res.json({ success: true })))
+    Expense.findById(req.params.id)
+        .then(expense => expense.remove().then(() => res.json({ success: true })))
         .catch(err => res.status(404).json({ success: false }));
 });
 
