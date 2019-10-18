@@ -1,23 +1,23 @@
 {
-  "name": "nestedspace",
-  "version": "0.1.0",
-  "description": "Website to showcase portfolio and useful apps for family",
-  "main": "server.js",
+  "name": "financeapp",
+  "version": "1.0.0",
+  "description": "small application for managing finances",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "server": "pm2 start server.js"
+     "server": "npm start --prefix server",
+     "client": "npm start --prefix client",
+     "install-client": "npm install --prefix client",
+     "install-server": "npm install --prefix server",
+     "dev": "pm2 start ./server/server.js && pm2 start ./client/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nested-space/nodePortfolioApp.git"
   },
   "author": "Ed Eden-Rump",
   "license": "MIT",
-  "dependencies": {
-    "bcrypt": "^3.0.6",
-    "body-parser": "^1.19.0",
-    "bootstrap": "^4.3.1",
-    "chart.js": "^2.8.0",
-    "ejs": "^2.7.1",
-    "express": "^4.17.1",
-    "jquery": "^3.4.1",
-    "mongoose": "^5.7.1",
-    "request": "^2.88.0"
-  }
+  "bugs": {
+    "url": "https://github.com/nested-space/nodePortfolioApp/issues"
+  },
+  "homepage": "https://github.com/nested-space/nodePortfolioApp#readme"
 }
