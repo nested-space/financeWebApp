@@ -20,7 +20,7 @@ app.get('*', function(req, res){
     res.render('404');
 });
 
-const port = 3001;
+const port = 3000;
 app.listen(port, process.env.IP, function(){
     console.log(`Serving on port ${port}`);
 });
