@@ -6,7 +6,7 @@ const router = express.Router();
 // @access Public
 // TODO: ALTER THIS TO BRING IN DATA ASYNCHRONOUSLY
 router.get('/', (req, res) => {
-    res.render('finance/finance_summary');
+    res.render('finance/summary');
 });
 
 // @route GET /finance/modify
@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
 // @access Public
 // TODO: ALTER THIS TO BRING DATA IN ASYNCHRONOUSLY
 router.get('/modify', (req, res) => {
-    res.render('finance/finance_modify');
+    res.render('finance/modify');
 });
 
 module.exports = router;

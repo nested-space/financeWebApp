@@ -1,10 +1,94 @@
+
 body {
-background: #56CCF2;  /* fallback for old browsers */
-background: -webkit-linear-gradient(to right, #2F80ED, #56CCF2);  /* Chrome 10-25, Safari 5.1-6 */
-background: linear-gradient(to right, #2F80ED, #56CCF2); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: #2980b9 ;  /* fallback for old browsers */
+    margin-top: 0px;
+}
+
+h1 {
+	background: #2980b9;
+	color: white;
+	margin: 70px 0 0 0;
+	padding: 20px;
+	text-transform: uppercase;
+	font-size: 24px;
+	font-weight: normal;
+}
+
+ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+li {
+	background: #fff;
+	height: 40px;
+	line-height: 40px;
+	color: #666;
+	font-size: 1rem;
+}
+
+li:nth-child(2n){
+	background: #f7f7f7;
+}
+
+span.edit {
+	background: #52a3ff;
+	height: 40px;
+	margin-right: 20px;
+	text-align: center;
+	color: white;
+	width: 0;
+	display: inline-block;
+	transition: 0.2s linear;
+	opacity: 0;
+}
+
+span.edit-on-click{
+	margin-left: 1px;
+}
+
+li:hover span.edit {
+	width: 40px;
+	opacity: 1.0;
+}
+
+input {
+	padding: 0;
+	margin: 0;
+	border: none;
+	background: transparent;
+	height: 40px;
+	line-height: 40px;
+	font-size: 1rem;
+}
+
+input.add-new {
+	font-size: 18px;
+	color: #2980b9;
+	background-color: #f7f7f7;
+	width: 100%;
+	padding: 13px 13px 13px 20px;
+	box-sizing: border-box;
+	border: 3px solid rgba(0,0,0,0);
+}
+
+input:focus.add-new{
+	background: #fff;
+	border: 3px solid #2980b9;
+	outline: none;
 
 }
 
+input.edit-existing{
+	font-style: italic;
+	outline: none;
+	color: #666;
+}
+
+.navbar {
+    background: #2980b9!important; 
+}
 
 /* The sidebar menu */
 .sidenav {
@@ -14,7 +98,7 @@ background: linear-gradient(to right, #2F80ED, #56CCF2); /* W3C, IE 10+/ Edge, F
     z-index: 1; /* Stay on top */
     top: 0; /* Stay at the top */
     left: 0;
-    background-color: #f8f9fa!important; /* Black */
+    background-color: #fffff0!important; /* Black */
     overflow-x: hidden; /* Disable horizontal scroll */
     padding-top: 10px;
     margin-top:50px; /* Allow for nav-bar*/
@@ -37,8 +121,7 @@ background: linear-gradient(to right, #2F80ED, #56CCF2); /* W3C, IE 10+/ Edge, F
 
 /* Style page content */
 .main {
-    margin-left: 120px; /* Same as the width of the sidebar*/
-    padding: 20px 40px;
+    padding: 60px;
 }
 
 /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
@@ -49,7 +132,7 @@ background: linear-gradient(to right, #2F80ED, #56CCF2); /* W3C, IE 10+/ Edge, F
     }
 
     .main {
-        margin-left: 0;
+        padding: 35px 20px;
     }
 
     .sidenav a {font-size: 18px;}
@@ -57,6 +140,20 @@ background: linear-gradient(to right, #2F80ED, #56CCF2); /* W3C, IE 10+/ Edge, F
 
 .widget-container {
     padding: 15px;
+    margin: 10px;
+}
+
+.widget-container-1{
+    background-color:#431c5d;
+}
+.widget-container-2{
+    background-color:#3fb0ac;
+}
+.widget-container-3{
+    background-color:#e05915;
+}
+.widget-container-4{
+    background-color:#173e43;
 }
 
 .widget-content {
@@ -69,3 +166,38 @@ background: linear-gradient(to right, #2F80ED, #56CCF2); /* W3C, IE 10+/ Edge, F
     overflow: auto;
 }
 
+.highlight-font-lg {
+    font-family:'Indie Flower', cursive; 
+    font-size: 2.5rem;
+}
+
+.highlight-font {
+    font-family: 'Indie Flower', cursive;
+    font-size: 1.25rem;
+    color: #fffff0;
+}
+
+.pink {
+    background-color: pink;
+    border: 1px solid red;
+}
+
+.completed {
+	color: gray;
+	text-decoration: line-through;
+}
+
+.fa-plus {
+	float: right;
+}
+
+#container {
+	width: 360px;
+	margin: 100px auto;
+	background: #f7f7f7;
+	box-shadow: 0 0 3px rgba(0,0,0, 0.1);
+// $color-1: #1c323d;
+// $color-2: #98bec8;
+// $color-3: #d1e1e0;
+        
+}
