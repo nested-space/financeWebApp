@@ -8,8 +8,22 @@ const Budget = require('../../models/Budget.js').Budget;
 // @desc        Get all budget items
 // @ access     Public TODO: improve to filter for user
 router.get('/', (req, res) => {
+    console.log('request made');
     Budget.find().sort({ quantity: -1 })
       .then(budgets => res.json(budgets))
+});
+
+// @route       GET api/budgetItems
+// @desc        Get all budget items
+// @ access     Public TODO: improve to filter for user
+router.get('/dev', (req, res) => {
+    Budget.find().sort({ quantity: -1 })
+      .then(budgets => {
+
+          let output = {};
+          for(let i = 0; i<budgets.length; i++){ output[budgets[i]['name']] = budgets[i]['quantity']; }
+          res.json(output)
+      })
 });
 
 // @route       POST api/budgets

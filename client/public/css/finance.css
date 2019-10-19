@@ -60,7 +60,7 @@ background: linear-gradient(to right, #2F80ED, #56CCF2); /* W3C, IE 10+/ Edge, F
 }
 
 .widget-content {
-    min-height:300px;
+    min-height:350px;
     height:100%;
     width:100%;
     border-radius: 0.25rem;

@@ -7,6 +7,17 @@ const bodyParser      = require('body-parser');
 const app = express();
 app.use(bodyParser.json());
 
+const cors = require('cors');
+app.use(cors(
+    {
+        "origin": "http://nestedspace.ddns.net",
+        "methods": "GET,POST,DELETE",
+        "preflightContinue": false,
+        "optionsSuccessStatus": 204
+    }
+));
+
+
 //Routes
 const api_budgets = require('./routes/api/budgets');
 const api_expenses = require('./routes/api/expenses');
