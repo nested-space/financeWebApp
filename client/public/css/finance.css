@@ -1,17 +1,21 @@
+:root {
+    --primary: #2980b9;
+    --primary-md: #94C0DC;
+    --primary-light: #FAFCFD;
+}
 
 body {
-    background: #2980b9 ;  /* fallback for old browsers */
+    background: var(--primary);
     margin-top: 0px;
 }
 
 h1 {
-	background: #2980b9;
 	color: white;
-	margin: 70px 0 0 0;
-	padding: 20px;
+	padding: 5px;
 	text-transform: uppercase;
-	font-size: 24px;
+	font-size: 1.5em;
 	font-weight: normal;
+        text-align:center;
 }
 
 ul {
@@ -32,7 +36,43 @@ li:nth-child(2n){
 	background: #f7f7f7;
 }
 
-span.edit {
+
+table, th, td {
+    /*border: 1px solid red;*/
+}
+
+table {
+    background: #f7f7f7;
+    width : 100%;
+}
+
+th {
+    padding: 15px;
+    text-align: center;
+}
+
+
+td {
+    padding: 5px 5px 5px 20px;
+    line-height: 40px;
+
+}
+
+tr:nth-child(2n){
+    background: #fff;
+}
+
+thead {
+    background-color: #2980b9 ;
+    color: white;
+    margin: 70px 0 0 0;
+    padding: 20px;
+    text-transform: uppercase;
+    font-size: 24px;
+    font-weight: lighter;
+}
+
+summary {
 	background: #52a3ff;
 	height: 40px;
 	margin-right: 20px;
@@ -42,15 +82,6 @@ span.edit {
 	display: inline-block;
 	transition: 0.2s linear;
 	opacity: 0;
-}
-
-span.edit-on-click{
-	margin-left: 1px;
-}
-
-li:hover span.edit {
-	width: 40px;
-	opacity: 1.0;
 }
 
 input {
@@ -63,14 +94,15 @@ input {
 	font-size: 1rem;
 }
 
-input.add-new {
-	font-size: 18px;
-	color: #2980b9;
-	background-color: #f7f7f7;
-	width: 100%;
-	padding: 13px 13px 13px 20px;
-	box-sizing: border-box;
-	border: 3px solid rgba(0,0,0,0);
+input.add-new {V
+    font-size: 1.2em;
+    color: #2980b9;
+    background-color: #f7f7f7;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    border: 3px solid rgba(0,0,0,0);
+    padding-left:15px;
 }
 
 input:focus.add-new{
@@ -84,6 +116,37 @@ input.edit-existing{
 	font-style: italic;
 	outline: none;
 	color: #666;
+}
+
+label.add-new{
+    color: white;
+    font-weight: bold;
+    margin: 0;
+    width: 100%;
+    padding: 5px 5px 5px 5px;
+    box-sizing: border-box;
+    border: 3px solid rgba(0,0,0,0);
+}
+
+.add-new{
+    width: 100%;
+}
+
+.add-new-right{
+    width:45%!important;
+    height: calc(1.5em + 0.85rem + 2px); 
+    float:right;
+}
+
+.add-new-label-right{
+    float: right;
+    width: 45%!important;
+    padding-left: 5%;
+    display: inline;
+}
+
+.grey-bg{
+    background-color: rgba(77,77,77,0.8);
 }
 
 .navbar {
@@ -105,46 +168,18 @@ input.edit-existing{
 }
 
 
-/* The navigation menu links */
-.sidenav a {
-    padding: 6px 8px 6px 16px;
-    text-decoration: none;
-    font-size: 1.25rem;
-    color: #818181;
-    display: block;
-}
-
-/* When you mouse over the navigation links, change their color */
-.sidenav a:hover {
-    color: #56CCF2;
-}
-
 /* Style page content */
 .main {
     padding: 60px;
 }
 
-/* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
-@media screen and (max-width: 576px) {
-    .sidenav {padding-top: 15px;}
-    .sidenav{
-        width: 0px;
-    }
-
-    .main {
-        padding: 35px 20px;
-    }
-
-    .sidenav a {font-size: 18px;}
-}
 
 .widget-container {
-    padding: 15px;
-    margin: 10px;
+    padding: 30px;
 }
 
 .widget-container-1{
-    background-color:#431c5d;
+    background-color: var(--primary-md);
 }
 .widget-container-2{
     background-color:#3fb0ac;
@@ -160,10 +195,9 @@ input.edit-existing{
     min-height:350px;
     height:100%;
     width:100%;
-    border-radius: 0.25rem;
-    background-color: rgb(255, 255, 255);
-    border: 1px solid blue;
+    background-color: var(--primary-light);
     overflow: auto;
+    padding: 15px;
 }
 
 .highlight-font-lg {
@@ -177,9 +211,9 @@ input.edit-existing{
     color: #fffff0;
 }
 
-.pink {
-    background-color: pink;
-    border: 1px solid red;
+.error {
+    background-color: pink!important;
+    border: 1px solid red!important;
 }
 
 .completed {
@@ -191,13 +225,106 @@ input.edit-existing{
 	float: right;
 }
 
+
+
+.flat-loader {
+  margin: 100px auto;
+  width: 50px;
+  height: 40px;
+  text-align: center;
+  font-size: 10px;
+}
+
+.flat-loader > div {
+  background-color: #DDD;
+  height: 100%;
+  width: 6px;
+  display: inline-block;
+  
+  -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;
+  animation: sk-stretchdelay 1.2s infinite ease-in-out;
+}
+
+.flat-loader .rect2 {
+  -webkit-animation-delay: -1.1s;
+  animation-delay: -1.1s;
+}
+
+.flat-loader .rect3 {
+  -webkit-animation-delay: -1.0s;
+  animation-delay: -1.0s;
+}
+
+.flat-loader .rect4 {
+  -webkit-animation-delay: -0.9s;
+  animation-delay: -0.9s;
+}
+
+.flat-loader .rect5 {
+  -webkit-animation-delay: -0.8s;
+  animation-delay: -0.8s;
+}
+
+.round-flat-loader {
+  margin: 20px auto 0;
+  width: 70px;
+  text-align: center;
+}
+
+.round-flat-loader > div {
+  width: 15px;
+  height: 15px;
+  background-color: #DDD;
+  border-radius: 100%;
+  margin: 2%;
+  display: inline-block;
+  -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+}
+
+.round-flat-loader .bounce1 {
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+
+.round-flat-loader .bounce2 {
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+
+@-webkit-keyframes sk-stretchdelay {
+  0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  
+  20% { -webkit-transform: scaleY(1.0) }
+}
+
+@keyframes sk-stretchdelay {
+  0%, 40%, 100% { 
+    transform: scaleY(0.4);
+    -webkit-transform: scaleY(0.4);
+  }  20% { 
+    transform: scaleY(1.0);
+    -webkit-transform: scaleY(1.0);
+  }
+}
+
+@-webkit-keyframes sk-bouncedelay {
+  0%, 80%, 100% { -webkit-transform: scale(0) }
+  40% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes sk-bouncedelay {
+  0%, 80%, 100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 40% {
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+  }
+}
+
 #container {
 	width: 360px;
 	margin: 100px auto;
 	background: #f7f7f7;
 	box-shadow: 0 0 3px rgba(0,0,0, 0.1);
-// $color-1: #1c323d;
-// $color-2: #98bec8;
-// $color-3: #d1e1e0;
-        
 }

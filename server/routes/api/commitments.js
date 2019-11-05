@@ -3,12 +3,13 @@ const router = express.Router();
 
 //Models
 const Commitment = require('../../models/Commitment.js').Commitment;
-
+const requiredFormat = require('../../models/Commitment.js').required;
 // @route       GET api/commitments
 // @desc        Get all commitments
 // @ access     Public TODO: improve to filter for user
 router.get('/', (req, res) => {
-    Commitment.find().sort({ quantity: -1 })
+    Commitment.find()
+        .sort({ quantity: -1 })
       .then(commitments => res.json(commitments))
 });
 
@@ -17,15 +18,32 @@ router.get('/', (req, res) => {
 // @ access     Public TODO: add authentification
 router.post('/', (req, res) => {
     console.log(req.body);
-    const newCommitment = new Commitment({
-        name: req.body.name,
-        quantity: req.body.quantity,
-        dayOfMonth: req.body.day,
-        category: req.body.category
-    });
 
-    newCommitment.save()
-      .then(commitment => res.json(commitment));
+    try {
+        const newCommitment = new Commitment(req.body);
+        newCommitment.save()
+            .then(commitment => {
+                res.status(201);
+                res.json({
+                    message: "Nice One",
+                    data: commitment
+                });
+            })
+            .catch(err => {
+                console.log("handling rejection");
+                res.status(422)
+                    .json({
+                        message: "We couldn't store that information for you. Please check the formatting of your commitment",
+                        format: requiredFormat
+                    });
+            });
+    }
+    catch(err) {
+        res.status(400).json({
+            message: "Format of request not suitable to create new commitment"
+        });
+    }
+    
 });
 
 // @route       DELETE api/commitments

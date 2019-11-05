@@ -5,12 +5,17 @@ const express         = require('express');
 const mongoose        = require('mongoose');
 const bodyParser      = require('body-parser');
 const app = express();
-app.use(bodyParser.json());
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// parse application/json
+app.use(bodyParser.json())
 
 const cors = require('cors');
 app.use(cors(
     {
-        "origin": "http://nestedspace.ddns.net",
+        "origin": "*",
         "methods": "GET,POST,DELETE",
         "preflightContinue": false,
         "optionsSuccessStatus": 204
@@ -22,6 +27,7 @@ app.use(cors(
 const api_budgets = require('./routes/api/budgets');
 const api_expenses = require('./routes/api/expenses');
 const api_commitments = require('./routes/api/commitments');
+const api_income = require('./routes/api/income');
 
 //Mongo config options
 const options = require('./config/keys.js').mongoOptions; 
@@ -42,8 +48,9 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
 app.use('/finance/api/budgets', api_budgets);
-app.use('/finance/api/commitments', api_commitments);
 app.use('/finance/api/expenses', api_expenses);
+app.use('/finance/api/commitments', api_commitments);
+app.use('/finance/api/income', api_income);
 
 app.get('*', function(req, res){
     res.render('404');
