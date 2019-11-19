@@ -53,9 +53,20 @@ const incomeSchema = new Schema({
         type: Number,
         required: true
     },
-    frequency : {
-        type: String,
-        required: true
+    constraint: {
+        recurrence: {
+            type: String,
+            required: true
+        },
+        dayOfMonth: {
+            type: String
+        },
+        dayOfWeek: {
+            type: String
+        },
+        weekInMonth: {
+            type: String
+        }
     },
     effective: {
         from:  {

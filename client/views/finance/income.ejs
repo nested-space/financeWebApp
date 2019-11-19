@@ -2,7 +2,7 @@
 
 <div class="main">
     <div class="row justify-content-center">
-        <div class="col-12 col-sm-8 col-md-6 col-xl-4 p-3 grey-bg"> 
+        <div class="col-12 col-sm-8 p-3 grey-bg"> 
             <h1 align="center">Add New Income Stream</h1>
             
             <label  for="name" 
@@ -10,9 +10,9 @@
             <input type="text" 
                    id="name" 
                    class="add-new" 
-                   oninput="validateName()"
-                   onpropertychange="validateName()"
-                   onkeyup="validateName();"
+                   oninput="validateName('name')"
+                   onpropertychange="validateName('name')"
+                   onkeyup="validateName('name');"
                    placeholder="Income Item Name">
             <label  for="quantity" 
                     class="add-new w-50">Quantity:</label>
@@ -23,9 +23,9 @@
                     class="add-new w-50" 
                     step="0.01" 
                     pattern="\d+"
-                    oninput="validateQuantity()"
-                    onpropertychange="validateQuantity()"
-                    onkeyup="validateQuantity();"
+                    oninput="validateNumber('quantity')"
+                    onpropertychange="validateNumber('quantity')"
+                    onkeyup="validateNumber('quantity');"
                     placeholder="Quantity..">
             <select id="frequency"
                     class="form-control w-25 d-inline rounded-0 add-new-right">
@@ -41,18 +41,18 @@
                     class="add-new">Start Date:</label>
             <input  id="start" 
                     class="add-new" 
-                    oninput="validateStart()"
-                    onpropertychange="validateStart()"
-                    onkeyup="validateStart();"
+                    oninput="validateDate('start')"
+                    onpropertychange="validateDate('start')"
+                    onkeyup="validateDate('start');"
                     type="date">
             <button id="submitButton" 
-                    onclick="submit()"
+                    onclick="submitAddNewIncome()"
                     class="btn btn-primary mt-3 add-new">Submit</button>
                 <div id="loadStatus"></div>
         </div>
     </div>
     <div class="row justify-content-center">
-        <div class="col-12 col-sm-8 col-md-6 col-xl-4 p-3 mt-5 grey-bg"> 
+        <div class="col-12 col-sm-8 p-3 mt-5 grey-bg"> 
             <table>
                 <thead>
                     <tr>
@@ -60,7 +60,7 @@
                     </tr>
                 </thead>
             </table>
-            <table id="summaryTable">
+            <table id="incomeTable">
             </table>
             <div class="flat-loader">
                 <div class="rect1"></div>
@@ -75,7 +75,11 @@
 
 
 <script src="/js/jquery.min.js" type="text/javascript"></script>
-<script src="/js/api.js" type="text/javascript"></script>
+<script src="/js/finance.js" type="text/javascript"></script>
 <script src="/js/income.js" type="text/javascript"></script>
+    <script>
+    prioritiseLink('incomeLink');
+    updateIncomeTable('incomeTable');
+</script>
 
 <% include partials/footer %>

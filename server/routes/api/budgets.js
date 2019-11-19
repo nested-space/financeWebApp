@@ -15,6 +15,39 @@ router.get('/', (req, res) => {
       .then(budgets => res.json(budgets))
 });
 
+// @route       GET api/budgets/:year/:month
+// @desc        Fetch all budgets for the year and month specified
+// @access      Public TODO: improve to filter for user
+router.get('/:year/:month', (req, res) => {
+    Budget.find()
+        .then(budgets => {
+            data = [];
+            budgets.map((budget) => {
+                let effective = true;
+                if("stop" in budget.effective){
+                    const stop = new Date(budget.effective.stop);
+                    if (stop.getUTCFullYear() < req.params.year){
+                        effective = false;
+                    } else if(stop.getUTCMonth() < req.params.month) {
+                        effective = false;
+                    }
+                }
+
+                const from = new Date(budget.effective.from || Date.now());
+                if(from.getUTCFullYear() > req.params.year) {
+                    effective = false;
+                } else if (from.getUTCMonth() > req.params.month) {
+                    effective = false;
+                }
+
+                if(effective){
+                    data.push(budget);
+                }
+            });
+            res.status(201).json(data);
+        });
+});
+
 // @route       POST api/budgets
 // @desc        Create a budget item
 // @ access     Public TODO: add authentification

@@ -1,43 +1,68 @@
 <% include partials/header %>
 
-<!-- Side navigation 
-<div class="sidenav highlight-font">
-  <a href="#">About</a>
-  <a href="#">Services</a>
-  <a href="#">Clients</a>
-  <a href="#">Contact</a>
-</div>
--->
-
 <div class="main p-0">
 
-    <div class="row mt-3 d-flex align-items-flex">
-        <div class="col-12 col-xl-8 p-0"> 
-            <div class="widget-container widget-container-1">
+    <div class="row d-flex align-items-flex" style="max-width: 100%; margin-right: 0; margin-left: 0;">
+        <div class="col-12 col-lg-6 col-xl-4 p-0"> 
+            <div class="widget-container" style='height:100%;'>
+                <div class='summary-content flex-column' id='insights'>
+                    <h1>Loading insights...</h1>
+                    <div class="flat-loader">
+                        <div class="rect1 highlight"></div>
+                        <div class="rect2 highlight"></div>
+                        <div class="rect3 highlight"></div>
+                        <div class="rect4 highlight"></div>
+                        <div class="rect5 highlight"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6 col-xl-8 p-0">
+            <div class="widget-container">
+                <span class='title'>
+                    <!--<span class="fas fa-arrow-left title-icon" style='float:left;' id='modelLeftArrow'></span>-->
+                    Finance Model
+                    <!--<span class="fas fa-arrow-right title-icon" style='float:right;' id='modelRightArrow'></span>-->
+                </span>
+                <div>
                 <canvas id="FinanceModelChart" class="widget-content"></canvas>
+                </div>
             </div>
         </div>
         <div class="col-12 col-lg-6 col-xl-4 p-0"> 
-            <div class="widget-container widget-container-2">
-                <canvas id="FinanceIOChart" class="widget-content"></canvas>
+            <div class="widget-container">
+                <span class='title'>
+                    Income Vs Outgoings
+                </span>
+                <div><canvas id="FinanceIOChart" class="widget-content"></canvas></div>
             </div>
         </div>
         <div class="col-12 col-lg-6 col-xl-4 p-0"> 
-            <div class="widget-container widget-container-3">
-                <canvas id="BudgetSummaryChart" class="widget-content"></canvas>
+            <div class="widget-container">
+                <span class='title'>
+                    Budget Breakdown
+                </span>
+                <div><canvas id="BudgetSummaryChart" class="widget-content"></canvas></div>
             </div>
         </div>
         <div class="col-12 col-lg-6 col-xl-4 p-0"> 
-            <div class="widget-container widget-container-4">
-                <canvas id="CommitmentSummaryChart" class="widget-content"></canvas>
+            <div class="widget-container">
+                <span class='title'>
+                    Commitments By Category
+                </span>
+                <div><canvas id="CommitmentSummaryChart" class="widget-content"></canvas></div>
             </div>
         </div> 
     </div>
 </div>
-
 <script src="/js/jquery.min.js" type="text/javascript"></script>
 <script src="/js/Chart.min.js"></script>
-<script src="/js/api.js" type="text/javascript"></script>
-<script src="/js/summaryCharts.js"></script>
+<script src="/js/finance.js" type="text/javascript"></script>
+
+<script>
+    prioritiseLink('modelLink');
+    updateSummaryPage();
+</script>
 
 <% include partials/footer %>

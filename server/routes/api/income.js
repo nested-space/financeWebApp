@@ -14,6 +14,39 @@ router.get('/', (req, res) => {
       .then(income => res.json(income))
 });
 
+// @route       GET api/income/:year/:month
+// @desc        Fetch all income for the year and month specified
+// @access      Public TODO: improve to filter for user
+router.get('/:year/:month', (req, res) => {
+    Income.find()
+        .then(incomes => {
+            data = [];
+            incomes.map((income) => {
+                let effective = true;
+                if("stop" in income.effective){
+                    const stop = new Date(income.effective.stop);
+                    if (stop.getUTCFullYear() < req.params.year){
+                        effective = false;
+                    } else if(stop.getUTCMonth() < req.params.month) {
+                        effective = false;
+                    }
+                }
+
+                const from = new Date(income.effective.from || Date.now());
+                if(from.getUTCFullYear() > req.params.year) {
+                    effective = false;
+                } else if (from.getUTCMonth() > req.params.month) {
+                    effective = false;
+                }
+
+                if(effective){
+                    data.push(income);
+                }
+            });
+            res.status(201).json(data);
+        });
+});
+
 // @route       POST api/income
 // @desc        Create an income stream
 // @ access     Public TODO: add authentification
