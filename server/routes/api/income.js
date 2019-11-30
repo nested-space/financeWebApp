@@ -85,12 +85,10 @@ router.post('/', (req, res) => {
 // @ access     Public TODO: add authentification
 router.delete('/:id', (req, res) => {
     Income.findById(req.params.id)
-        .then(income => income.remove()
-            .then(() => res.json({ success: true })))
-            .catch(err => res.status(404).json({ success: false }));
-
+        .then(income => income.remove().then(() => res.json({ success: true })))
+        .catch(err => res.status(404).json({ success: false }));
 });
 
-//TODO: create GET route for api/budgets/:id to get detail for one item
+//TODO: create GET route for api/incomes/:id to get detail for one item
 
 module.exports = router;

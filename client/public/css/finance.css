@@ -64,7 +64,6 @@ table {
 
 th {
     padding: 15px;
-    text-align: center;
 }
 
 
@@ -83,7 +82,7 @@ thead {
     color: white;
     margin: 70px 0 0 0;
     padding: 20px;
-    text-transform: uppercase;
+    text-transform: capitalize;
     font-size: 24px;
     font-weight: lighter;
 }
@@ -136,6 +135,32 @@ input.edit-existing{
     font-style: italic;
     outline: none;
     color: #666;
+}
+
+td.money-column,
+th.money-column {
+    width: 100px;
+    padding-left: 0;
+}
+td .delete{
+    height: 40px;
+    width: 0px;
+    background: var(--danger);
+    border-radius: 20px;
+    margin-right: 20px;
+    margin-left: 0px;
+    text-align: center;
+    line-height:40px;
+    color: white;
+    display: inline-block;
+    opacity: 0;
+    transition: 0.2s;
+}
+
+td:hover .delete {
+    width: 40px;
+    margin-left: 5px;
+    opacity: 1.0;
 }
 
 label.add-new{
@@ -431,27 +456,6 @@ span.success{
 
 .highlight-font.disabled {
     color:var(--primary-md)!important;
-}
-
-td .delete{
-    height: 40px;
-    width: 0px;
-    background: var(--danger);
-    border-radius: 20px;
-    margin-right: 20px;
-    margin-left: 0px;
-    text-align: center;
-    line-height:40px;
-    color: white;
-    display: inline-block;
-    opacity: 0;
-    transition: 0.2s;
-}
-
-td:hover .delete {
-    width: 40px;
-    margin-left: 5px;
-    opacity: 1.0;
 }
 
 .error {

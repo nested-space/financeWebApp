@@ -18,10 +18,11 @@
                     class="add-new">Category:</label>
             <select id="category" 
                     class="form-control d-inline rounded-0 add-new">
-                <option>General</option>
-                <option>Utilities</option>
-                <option>Luxury</option>
+                <option>Occasional</option>
+                <option>Groceries</option>
                 <option>Kids</option>
+                <option>Entertainment</option>
+                <option>Clothing</option>
             </select>
             <label  for="quantity" 
                     class="add-new w-50">Quantity:</label>
@@ -32,9 +33,9 @@
                     class="add-new w-50" 
                     step="0.01" 
                     pattern="\d+"
-                    oninput="validateQuantity('quantity')"
-                    onpropertychange="validateQuantity('quantity')"
-                    onkeyup="validateQuantity('quantity');"
+                    oninput="validateNumber('quantity')"
+                    onpropertychange="validateNumber('quantity')"
+                    onkeyup="validateNumber('quantity');"
                     placeholder="Quantity..">
             <select id="frequency"
                     onchange="updateLengthVisibility('frequency', 'lengthHolder')"
@@ -50,9 +51,9 @@
                     class="add-new">Start Date:</label>
             <input  id="start" 
                     class="add-new" 
-                    oninput="validateStart('start')"
-                    onpropertychange="validateStart('start')"
-                    onkeyup="validateStart('start');"
+                    oninput="validateDate('start')"
+                    onpropertychange="validateDate('start')"
+                    onkeyup="validateDate('start');"
                     type="date">
             <div id='lengthHolder' class='lengthHolder'>
                 <label  for="length" 
@@ -77,19 +78,6 @@
                     onclick="submitAddNewCommitment()"
                     class="btn btn-primary mt-3 add-new">Submit</button>
                 <div id="loadStatus"></div>
-        </div>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-12 col-sm-8 p-3 mt-5 grey-bg"> 
-                <table>
-                <thead>
-                    <tr>
-                        <th colspan="2">Current Commitments</th>
-                    </tr>
-                </thead>
-            </table>
-            <table id="commitmentsTable">
-            </table>
             <div class="flat-loader">
                 <div class="rect1"></div>
                 <div class="rect2"></div>
@@ -98,6 +86,9 @@
                 <div class="rect5"></div>
             </div>
         </div>
+    </div>
+    <div id='tables-section' class="row justify-content-center">
+        <div id='tables-section' class='row' style='padding-left: 15px; padding-right: 15px;'></div>
     </div>
 </div>
 

@@ -10,10 +10,6 @@ const commitmentSchema = new Schema({
         type: Number,
         required: true
     },
-    frequency : {
-        type: String,
-        required: true
-    },
     constraint: {
         recurrence: {
             type: String,
