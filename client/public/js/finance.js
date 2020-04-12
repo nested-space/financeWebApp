@@ -250,7 +250,7 @@ function updateExpensesModel(dropdownId, chartId){
 
         //TODO: extract timeframe determination into separate method
         let then = new Date(Date.now());
-        then.setMonth(9);
+        then.setMonth(then.getUTCMonth() - 1);
         then.setDate(30);
         const difference = Math.round(Math.abs((now.getTime() - then.getTime()) / oneDay));
         let startDate = new Date(Date.now());
@@ -350,16 +350,18 @@ function updateSummaryPage() {
                 createPieChartDataSet(pieChartDefaults, financeDetails.budgets));
 
             let then = new Date(Date.now());
-            then.setMonth(9);
+            then.setMonth(then.getUTCMonth() - 1);
             then.setDate(30);
             const oneDay = 24 * 60 * 60 * 1000;
             const difference = Math.round(Math.abs((now.getTime() - then.getTime()) / oneDay));
 
             let startDate = new Date(Date.now());
             startDate.setDate(startDate.getDate() - difference);
+            console.log(startDate);
             let endDate = new Date(Date.now());
             endDate.setDate(0);
             endDate.setDate(endDate.getDate() + 30);
+            console.log(endDate);
 
             updatePieChartCanvas(
                 commitmentsChartContainer,
@@ -370,7 +372,7 @@ function updateSummaryPage() {
 
             let financeModel = getFinanceModel(financeDetails, startDate, endDate);
             
-            const initialValue = 2545;
+            const initialValue = 2413.56;
             const formattedModel = subtractiveModel(financeModel, initialValue);
             const data = 
                 {
@@ -1243,7 +1245,7 @@ function postRequestToAddIncome(data, callback){
 
         if(xhr.status == 201){
             callback(true, JSON.parse(xhr.response));
-            updateIncomeTable('incomeTable')
+            updateIncomeTable('tables-section')
         } else {
             callback(false, JSON.parse(xhr.response));
             //TODO: provide feedback to user.
@@ -1267,11 +1269,12 @@ function postRequestToAddIncome(data, callback){
 //                                                                              //
 //------------------------------------------------------------------------------//
 
-const budgetsTableId = 'budgetsTable';
+const budgetsTableId = 'tables-section';
 const expensesTableId = 'expensesTable';
 
 function updateBudgetsTable(tableId, budgets){
-   document.getElementById(tableId).innerHTML = createSummaryTableHTML("Budgets", budgets);
+   console.log(tableId);
+    document.getElementById(tableId).innerHTML = createSummaryTableHTML("Budgets", budgets);
     $(".flat-loader").remove();
 }
 
@@ -1298,7 +1301,7 @@ function createDefaultWidthWidgetSectionHTML(htmlContent){
 }
 
 function createSummaryTableHTML(title, items){
-    let body = "<div style='max-height: 400px; overflow:auto; min-height: 400px; background: white;'><table>";
+    let body = "<div style='max-height: 400px; overflow:auto; min-height: 400px; width: 100%; background: white;'><table>";
     let totalQuantity = 0;
     for(let i = 0; i < items.length; i++){
         body += createSummaryTableRowHTML(items[i]);
@@ -1478,6 +1481,7 @@ function updateIncomeTable(tableId) {
 
     Promise.all(promises)
         .then(function() {
+            console.log(financeDetails.income);
             updateIncomeTableHTML(tableId, financeDetails.income);
         })
         .catch(console.error);

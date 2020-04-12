@@ -69,8 +69,7 @@
                 <div id="loadStatus"></div>
             </div>
             <div class="p-3 mt-5 grey-bg"> 
-                <table id="budgetItemsTable">
-                </table>
+                <div id='tables-section' class='row' style='padding-left: 15px; padding-right: 15px;'></div>
                 <div class="flat-loader">
                     <div class="rect1"></div>
                     <div class="rect2"></div>
@@ -88,7 +87,8 @@
 <script src="/js/finance.js" type="text/javascript"></script>
 <script>
     prioritiseLink('budgetsLink');
-    updateBudgetItems('budgetPieChart', 'budgetItemsTable');
+    updateBudgetItems('budgetPieChart', 'tables-section');
+    //updateBudgetsTable('');
 </script>
 
 <% include partials/footer %>

@@ -23,7 +23,7 @@ router.get('/:year/:month', (req, res) => {
             data = [];
             incomes.map((income) => {
                 let effective = true;
-                if("stop" in income.effective){
+                if(income.effective.stop !== undefined){
                     const stop = new Date(income.effective.stop);
                     if (stop.getUTCFullYear() < req.params.year){
                         effective = false;
@@ -35,7 +35,7 @@ router.get('/:year/:month', (req, res) => {
                 const from = new Date(income.effective.from || Date.now());
                 if(from.getUTCFullYear() > req.params.year) {
                     effective = false;
-                } else if (from.getUTCMonth() > req.params.month) {
+                } else if ((from.getUTCFullYear() == req.params.year) && (from.getUTCMonth() >= req.params.month)) {
                     effective = false;
                 }
 
@@ -44,7 +44,11 @@ router.get('/:year/:month', (req, res) => {
                 }
             });
             res.status(201).json(data);
-        });
+        })
+    .catch(err => {
+        console.log("error");
+
+    });
 });
 
 // @route       POST api/income

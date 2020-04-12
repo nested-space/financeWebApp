@@ -23,7 +23,7 @@ router.get('/:year/:month', (req, res) => {
             data = [];
             commitments.map((commitment) => {
                 let effective = true;
-                if("stop" in commitment.effective){
+                if(commitment.effective.stop !== undefined){
                     const stop = new Date(commitment.effective.stop);
                     if (stop.getUTCFullYear() < req.params.year){
                         effective = false;
@@ -35,7 +35,7 @@ router.get('/:year/:month', (req, res) => {
                 const from = new Date(commitment.effective.from || Date.now());
                 if(from.getUTCFullYear() > req.params.year) {
                     effective = false;
-                } else if (from.getUTCMonth() > req.params.month) {
+                } else if ((from.getUTCFullYear() == req.params.year) && (from.getUTCMonth() > req.params.month)) {
                     effective = false;
                 }
 
