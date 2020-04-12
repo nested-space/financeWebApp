@@ -4,12 +4,12 @@
   "description": "small application for managing finances",
   "main": "index.js",
   "scripts": {
-     "server": "npm start --prefix server",
-     "dev-server":"pm2 start ./server/server.js",
-     "client": "npm start --prefix client",
-     "install-client": "npm install --prefix client",
-     "install-server": "npm install --prefix server",
-     "dev": "pm2 start ./server/server.js && pm2 start ./client/app.js"
+    "server": "npm start --prefix server",
+    "dev-server": "pm2 start ./server/server.js",
+    "client": "npm start --prefix client",
+    "install-client": "npm install --prefix client",
+    "install-server": "npm install --prefix server",
+    "dev": "pm2 start ./server/server.js && pm2 start ./client/app.js"
   },
   "repository": {
     "type": "git",
