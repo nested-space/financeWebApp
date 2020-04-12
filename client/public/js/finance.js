@@ -48,6 +48,10 @@ const colours = [
 
 const ioColours = [success, danger];
 
+/* *********************************************************************** */
+/*                              CHART js callbacks                         */
+/* *********************************************************************** */
+
 const tickMarkCurrencyCallback = function (value, index, values) {
   let modifier = "";
   let divisor = 1;
@@ -69,52 +73,10 @@ const chartLabelCurrencyCallback = {
   },
 };
 
-const pieChartDefaults = {
-  label: "",
-  backgroundColor: colours,
-  borderWidth: 0,
-};
+/* *********************************************************************** */
+/*                              CHART js OPTIONS                           */
+/* *********************************************************************** */
 
-const setPointLineDefaults = {
-  label: "Set Point",
-  ptSize: 0,
-  bdColor: colours[1],
-  bdWidth: 2,
-  bdDash: [10, 10],
-  bgColor: colours[2],
-  fillBoolean: false,
-};
-
-const extrapolatedLineDefaults = {
-  label: "Predicted",
-  ptSize: 0,
-  bdColor: colours[4],
-  bdWidth: 2,
-  bdDash: [10, 10],
-  bgColor: colours[3],
-  fillBoolean: false,
-};
-
-const realLineDefaults = {
-  label: "Real",
-  ptSize: 0,
-  bdColor: colours[4],
-  bdWidth: 2,
-  bdDash: [0, 0],
-  bgColor: colours[0],
-  fillBoolean: true,
-};
-
-const defaultPieChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  legend: {
-    position: "bottom",
-  },
-  tooltips: {
-    callbacks: chartLabelCurrencyCallback,
-  },
-};
 const modelLineChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -198,20 +160,67 @@ const horizontalBarChartOptions = {
   },
 };
 
-function prioritiseLink(linkId) {
+const defaultPieChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  legend: {
+    position: "bottom",
+  },
+  tooltips: {
+    callbacks: chartLabelCurrencyCallback,
+  },
+};
+
+/* *********************************************************************** */
+/*                              CHART js DEFAULTS                          */
+/* *********************************************************************** */
+
+const pieChartDefaults = {
+  label: "",
+  backgroundColor: colours,
+  borderWidth: 0,
+};
+
+const setPointLineDefaults = {
+  label: "Set Point",
+  ptSize: 0,
+  bdColor: colours[1],
+  bdWidth: 2,
+  bdDash: [10, 10],
+  bgColor: colours[2],
+  fillBoolean: false,
+};
+
+const extrapolatedLineDefaults = {
+  label: "Predicted",
+  ptSize: 0,
+  bdColor: colours[4],
+  bdWidth: 2,
+  bdDash: [10, 10],
+  bgColor: colours[3],
+  fillBoolean: false,
+};
+
+const realLineDefaults = {
+  label: "Real",
+  ptSize: 0,
+  bdColor: colours[4],
+  bdWidth: 2,
+  bdDash: [0, 0],
+  bgColor: colours[0],
+  fillBoolean: true,
+};
+
+function setOneHeaderLinkActive_DeactivateOthers(linkId) {
   document.getElementById("modelLink").classList.remove("active");
   document.getElementById("budgetsLink").classList.remove("active");
   document.getElementById("expensesLink").classList.remove("active");
   document.getElementById("incomeLink").classList.remove("active");
   document.getElementById("commitmentsLink").classList.remove("active");
-
   document.getElementById(linkId).classList.add("active");
 }
 
 function updateExpensesPage() {
-  const expensesModelChartContainer = document
-    .getElementById("ExpensesModelChart")
-    .getContext("2d");
   const expensesBreakdownChartContainer = document
     .getElementById("ExpensesBreakdownChart")
     .getContext("2d");
