@@ -1,76 +1,89 @@
 <% include partials/header %>
 
 <div class="main">
-    <div class="row justify-content-center">
-        <div class="col-12 col-sm-8 p-3 grey-bg"> 
-            <h1 align="center">Add New Income Stream</h1>
-            
-            <label  for="name" 
-                    class="add-new">Income item:</label>
-            <input type="text" 
-                   id="name" 
-                   class="add-new" 
-                   oninput="validateName('name')"
-                   onpropertychange="validateName('name')"
-                   onkeyup="validateName('name');"
-                   placeholder="Income Item Name">
-            <label  for="quantity" 
-                    class="add-new w-50">Quantity:</label>
-            <label  for="frequency" 
-                    class="add-new add-new-label-right">Frequency:</label>
-            <input  type="number" 
-                    id="quantity" 
-                    class="add-new w-50" 
-                    step="0.01" 
-                    pattern="\d+"
-                    oninput="validateNumber('quantity')"
-                    onpropertychange="validateNumber('quantity')"
-                    onkeyup="validateNumber('quantity');"
-                    placeholder="Quantity..">
-            <select id="frequency"
-                    class="form-control w-25 d-inline rounded-0 add-new-right">
-                <option>Once Only</option>
-                <option>Daily</option>
-                <option>Weekly</option>
-                <option>Monthly</option>
-                <option>Quarterly</option>
-                <option>Annual</option>
-            </select>
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-8 p-3 grey-bg">
+      <h1 align="center">Add New Income Stream</h1>
 
-            <label  for="start" 
-                    class="add-new">Start Date:</label>
-            <input  id="start" 
-                    class="add-new" 
-                    oninput="validateDate('start')"
-                    onpropertychange="validateDate('start')"
-                    onkeyup="validateDate('start');"
-                    type="date">
-            <button id="submitButton" 
-                    onclick="submitAddNewIncome()"
-                    class="btn btn-primary mt-3 add-new">Submit</button>
-                <div id="loadStatus"></div>
-        </div>
+      <label for="name" class="add-new">Income item:</label>
+      <input
+        type="text"
+        id="name"
+        class="add-new"
+        oninput="validateName('name')"
+        onpropertychange="validateName('name')"
+        onkeyup="validateName('name');"
+        placeholder="Income Item Name"
+      />
+      <label for="quantity" class="add-new w-50">Quantity:</label>
+      <label for="frequency" class="add-new add-new-label-right"
+        >Frequency:</label
+      >
+      <input
+        type="number"
+        id="quantity"
+        class="add-new w-50"
+        step="0.01"
+        pattern="\d+"
+        oninput="validateNumber('quantity')"
+        onpropertychange="validateNumber('quantity')"
+        onkeyup="validateNumber('quantity');"
+        placeholder="Quantity.."
+      />
+      <select
+        id="frequency"
+        class="form-control w-25 d-inline rounded-0 add-new-right"
+      >
+        <option>Once Only</option>
+        <option>Daily</option>
+        <option>Weekly</option>
+        <option>Monthly</option>
+        <option>Quarterly</option>
+        <option>Annual</option>
+      </select>
+
+      <label for="start" class="add-new">Start Date:</label>
+      <input
+        id="start"
+        class="add-new"
+        oninput="validateDate('start')"
+        onpropertychange="validateDate('start')"
+        onkeyup="validateDate('start');"
+        type="date"
+      />
+      <button
+        id="submitButton"
+        onclick="submitAddNewIncome()"
+        class="btn btn-primary mt-3 add-new"
+      >
+        Submit
+      </button>
+      <div id="loadStatus"></div>
     </div>
-    <div class="row justify-content-center">
-        <div class="col-12 col-sm-8 p-3 mt-5 grey-bg"> 
-                <div id='tables-section' class='row' style='padding-left: 15px; padding-right: 15px;'></div>
-            <div class="flat-loader">
-                <div class="rect1"></div>
-                <div class="rect2"></div>
-                <div class="rect3"></div>
-                <div class="rect4"></div>
-                <div class="rect5"></div>
-            </div>
-        </div>
+  </div>
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-8 p-3 mt-5 grey-bg">
+      <div
+        id="tables-section"
+        class="row"
+        style="padding-left: 15px; padding-right: 15px;"
+      ></div>
+      <div class="flat-loader">
+        <div class="rect1"></div>
+        <div class="rect2"></div>
+        <div class="rect3"></div>
+        <div class="rect4"></div>
+        <div class="rect5"></div>
+      </div>
     </div>
+  </div>
 </div>
-
 
 <script src="/js/jquery.min.js" type="text/javascript"></script>
 <script src="/js/finance.js" type="text/javascript"></script>
-    <script>
-    prioritiseLink('incomeLink');
-    updateIncomeTable('tables-section');
+<script>
+  prioritiseLink("incomeLink");
+  updateIncomeTable("tables-section");
 </script>
 
 <% include partials/footer %>
