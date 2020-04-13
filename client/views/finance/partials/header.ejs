@@ -1,101 +1,71 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>My Finances</title>
-
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#2980b9" />
-
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="https://fonts.googleapis.com/css?family=Roboto:400,700,500"
+<nav
+  class="navbar navbar-expand-md navbar-dark bg-light justify-content-between"
+>
+  <div class="spacer-40">Login</div>
+  <a class="navbar-brand m-0 p-0" href="/finance">
+    <img
+      src="/img/finance_icon_rounded.png"
+      width="40"
+      height="40"
+      class="d-inline-block align-top"
+      alt=""
     />
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="https://fonts.googleapis.com/css?family=Indie+Flower&display=swap"
-    />
-    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" />
-    <link rel="stylesheet" type="text/css" href="/css/finance.css" />
-    <link rel="icon" href="/ico/favicon.ico" />
-    <script
-      src="https://kit.fontawesome.com/9b0ef4e097.js"
-      crossorigin="anonymous"
-    ></script>
-  </head>
-  <body>
-    <nav
-      class="navbar navbar-expand-md navbar-dark bg-light justify-content-between"
+  </a>
+
+  <div class="spacer-40-sm-right">
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarNavAltMarkup"
+      aria-controls="navbarNavAltMarkup"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+      style="
+        top: 8px;
+        padding-left: 8px;
+        padding-right: 8px;
+        position: absolute;
+      "
     >
-      <div class="spacer-40">Login</div>
-      <a class="navbar-brand m-0 p-0" href="/finance">
-        <img
-          src="/img/finance_icon_rounded.png"
-          width="40"
-          height="40"
-          class="d-inline-block align-top"
-          alt=""
-        />
-      </a>
-
-      <div class="spacer-40-sm-right">
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarNavAltMarkup"
-          aria-controls="navbarNavAltMarkup"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-          style="
-            top: 8px;
-            padding-left: 8px;
-            padding-right: 8px;
-            postition: absolute;
-          "
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-      </div>
-      <div
-        class="collapse navbar-collapse spacer-40 justify-content-end"
-        id="navbarNavAltMarkup"
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </div>
+  <div
+    class="collapse navbar-collapse spacer-40 justify-content-end"
+    id="navbarNavAltMarkup"
+  >
+    <div class="navbar-nav">
+      <a
+        id="modelLink"
+        class="nav-item nav-link highlight-font active text-right"
+        href="/finance"
+        >Model<span class="sr-only">(current)</span></a
       >
-        <div class="navbar-nav">
-          <a
-            id="modelLink"
-            class="nav-item nav-link highlight-font active text-right"
-            href="/finance"
-            >Model<span class="sr-only">(current)</span></a
-          >
-          <a
-            id="budgetsLink"
-            class="nav-item nav-link highlight-font text-right"
-            href="/finance/budgets"
-            >Budgets</a
-          >
-          <a
-            id="expensesLink"
-            class="nav-item nav-link highlight-font text-right"
-            href="/finance/expenses"
-            >Expenses</a
-          >
-          <a
-            id="incomeLink"
-            class="nav-item nav-link highlight-font text-right"
-            href="/finance/income"
-            >Income</a
-          >
-          <a
-            id="commitmentsLink"
-            class="nav-item nav-link highlight-font text-right"
-            href="/finance/commitments"
-            >Commitments</a
-          >
-        </div>
-      </div>
-    </nav>
-  </body>
-</html>
+      <a
+        id="budgetsLink"
+        class="nav-item nav-link highlight-font text-right"
+        href="/finance/budgets"
+        >Budgets</a
+      >
+      <a
+        id="expensesLink"
+        class="nav-item nav-link highlight-font text-right"
+        href="/finance/expenses"
+        >Expenses</a
+      >
+      <a
+        id="incomeLink"
+        class="nav-item nav-link highlight-font text-right"
+        href="/finance/income"
+        >Income</a
+      >
+      <a
+        id="commitmentsLink"
+        class="nav-item nav-link highlight-font text-right"
+        href="/finance/commitments"
+        >Commitments</a
+      >
+    </div>
+  </div>
+</nav>

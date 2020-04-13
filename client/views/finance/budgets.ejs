@@ -1,111 +1,133 @@
-<% include partials/header %>
-<style>
-  .pink {
-    background-color: pink;
-    border: 1px solid;
-  }
-</style>
+<!DOCTYPE html>
+<html>
+  <% include partials/meta %>
+  <body>
+    <% include partials/header %>
+    <style>
+      .pink {
+        background-color: pink;
+        border: 1px solid;
+      }
+    </style>
 
-<div class="main">
-  <div class="row">
-    <div class="col-12 col-md-6 col-lg-8">
+    <div class="main">
       <div class="row">
-        <div class="col-12 p-0">
-          <div class="widget-container pt-lg-0">
-            <span class="title">
-              Spend V Budget
-            </span>
-            <div>
-              <canvas id="budgetProgressChart" class="widget-content"></canvas>
+        <div class="col-12 col-md-6 col-lg-8">
+          <div class="row">
+            <div class="col-12 p-0">
+              <div class="widget-container pt-lg-0">
+                <span class="title">
+                  Spend V Budget
+                </span>
+                <div>
+                  <canvas
+                    id="budgetProgressChart"
+                    class="widget-content"
+                  ></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6 p-0">
+              <div class="widget-container pt-0">
+                <span class="title">
+                  Budget Breakdown
+                </span>
+                <div>
+                  <canvas id="budgetPieChart" class="widget-content"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6 p-0">
+              <div class="widget-container pt-lg-0">
+                <span class="title">
+                  Spend V Budget
+                </span>
+                <div>
+                  <canvas
+                    id="budgetHistoryChart"
+                    class="widget-content"
+                  ></canvas>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="col-12 col-lg-6 p-0">
-          <div class="widget-container pt-0">
-            <span class="title">
-              Budget Breakdown
-            </span>
-            <div>
-              <canvas id="budgetPieChart" class="widget-content"></canvas>
-            </div>
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="p-3 grey-bg">
+            <h1 align="center">Add New Budget Item</h1>
+            <label for="name" class="add-new">Budget item:</label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              class="add-new"
+              placeholder="Budget Item Name"
+              oninput="validateName()"
+              onpropertychange="validateName()"
+              onkeyup="validateName();"
+              required="required"
+            />
+            <label for="quantity" class="add-new">Quantity:</label>
+            <input
+              id="quantity"
+              name="quantity"
+              type="number"
+              pattern="\d+"
+              class="add-new"
+              step="0.01"
+              placeholder="Quantity.."
+              oninput="validateQuantity()"
+              onpropertychange="validateQuantity()"
+              onkeyup="validateQuantity();"
+              required="required"
+            />
+            <button
+              id="submitButton"
+              type="submit"
+              onclick="submitAddNewBudgetForm()"
+              class="btn btn-primary mt-3 add-new"
+            >
+              Submit
+            </button>
+            <div id="loadStatus"></div>
           </div>
-        </div>
-        <div class="col-12 col-lg-6 p-0">
-          <div class="widget-container pt-lg-0">
-            <span class="title">
-              Spend V Budget
-            </span>
-            <div>
-              <canvas id="budgetHistoryChart" class="widget-content"></canvas>
+          <div class="p-3 mt-5 grey-bg">
+            <div
+              id="tables-section"
+              class="row"
+              style="padding-left: 15px; padding-right: 15px;"
+            ></div>
+            <div class="flat-loader">
+              <div class="rect1"></div>
+              <div class="rect2"></div>
+              <div class="rect3"></div>
+              <div class="rect4"></div>
+              <div class="rect5"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="col-12 col-md-6 col-lg-4">
-      <div class="p-3 grey-bg">
-        <h1 align="center">Add New Budget Item</h1>
-        <label for="name" class="add-new">Budget item:</label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          class="add-new"
-          placeholder="Budget Item Name"
-          oninput="validateName()"
-          onpropertychange="validateName()"
-          onkeyup="validateName();"
-          required="required"
-        />
-        <label for="quantity" class="add-new">Quantity:</label>
-        <input
-          id="quantity"
-          name="quantity"
-          type="number"
-          pattern="\d+"
-          class="add-new"
-          step="0.01"
-          placeholder="Quantity.."
-          oninput="validateQuantity()"
-          onpropertychange="validateQuantity()"
-          onkeyup="validateQuantity();"
-          required="required"
-        />
-        <button
-          id="submitButton"
-          type="submit"
-          onclick="submitAddNewBudgetForm()"
-          class="btn btn-primary mt-3 add-new"
-        >
-          Submit
-        </button>
-        <div id="loadStatus"></div>
-      </div>
-      <div class="p-3 mt-5 grey-bg">
-        <div
-          id="tables-section"
-          class="row"
-          style="padding-left: 15px; padding-right: 15px;"
-        ></div>
-        <div class="flat-loader">
-          <div class="rect1"></div>
-          <div class="rect2"></div>
-          <div class="rect3"></div>
-          <div class="rect4"></div>
-          <div class="rect5"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
-<script src="/js/jquery.min.js" type="text/javascript"></script>
-<script src="/js/Chart.min.js"></script>
-<script src="/js/finance.js" type="text/javascript"></script>
-<script>
-  setOneHeaderLinkActive_DeactivateOthers("budgetsLink");
-  updateBudgetItems("budgetPieChart", "tables-section");
-  //updateBudgetsTable('');
-</script>
+    <script>
+      const page_config = {
+        header: "budgetsLink",
+        pieChart: {
+          target: "budgetsPieChart",
+          source: "budgets",
+        },
+        tables: {
+          target: "tables-section",
+          source: "budgets",
+        },
+      };
+    </script>
 
-<% include partials/footer %>
+    <script>
+      setOneHeaderLinkActive_DeactivateOthers("budgetsLink");
+      updateBudgetItems("budgetPieChart", "tables-section");
+      //updateBudgetsTable('');
+    </script>
+    <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+  </body>
+</html>
