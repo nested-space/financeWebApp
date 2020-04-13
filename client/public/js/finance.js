@@ -1,3 +1,5 @@
+"use strict";
+
 const currencySymbol = "£";
 const allBudgets = "All budgets";
 const oneDay = 24 * 60 * 60 * 1000;
@@ -252,7 +254,7 @@ function updateExpensesPage() {
 
       updateExpensesModel("category-select", "ExpensesModelChart");
 
-      expenses = splitByKey(financeDetails.expenses, "category");
+      let expenses = splitByKey(financeDetails.expenses, "category");
       let sections = "";
       Object.keys(expenses).forEach((key) => {
         const newSection = createDefaultWidthWidgetSectionHTML(
@@ -340,7 +342,7 @@ function formatFinanceForChart(financeItems) {
 }
 
 function createPieChartDataSet(settings, items) {
-  formattedItems = formatFinanceForChart(items);
+  let formattedItems = formatFinanceForChart(items);
   return {
     labels: formattedItems.labels,
     datasets: [
@@ -558,7 +560,7 @@ function getFinanceModel(financeDetails, startDate, endDate) {
 
 function constraintsFulfilled(item, currentDate) {
   //TODO: if the monthly commitment occurs on a date that doesn't exist in this month (i.e 31st in September), take it out early.
-  fulfilled = true;
+  let fulfilled = true;
   let dayOfWeek = ((item || {}).constraint || {}).dayOfWeek;
   if (dayOfWeek != undefined) {
     console.log("day of week constraint currently not handled" + dayOfWeek);
@@ -620,7 +622,7 @@ function cumulativeModel(financeModel, setPointValue) {
   let predicted = [];
   let labels = [];
   const now = new Date(Date.now());
-  currentValue = 0;
+  let currentValue = 0;
   Object.keys(financeModel).forEach(function (key) {
     let currentDate = new Date(key);
     setPoint.push(parseFloat(setPointValue).toFixed(2));
@@ -640,7 +642,7 @@ function cumulativeModel(financeModel, setPointValue) {
     labels.push(getDateString(new Date(key)));
   });
 
-  formattedModel = {
+  let formattedModel = {
     setPoint: setPoint,
     real: real,
     predicted: predicted,
@@ -655,8 +657,8 @@ function subtractiveModel(financeModel, initialValue) {
   let labels = [];
   const now = new Date(Date.now());
 
-  currentReal = initialValue;
-  currentPredicted = initialValue;
+  let currentReal = initialValue;
+  let currentPredicted = initialValue;
   Object.keys(financeModel).forEach(function (key) {
     let currentDate = new Date(key);
 
@@ -684,7 +686,7 @@ function subtractiveModel(financeModel, initialValue) {
     labels.push(getDateString(new Date(key)));
   });
 
-  formattedModel = {
+  let formattedModel = {
     predicted: predicted,
     real: real,
     next: next,
@@ -783,6 +785,7 @@ function getBalanceInsight(model) {
     model.real[model.real.length - 1] - model.predicted[model.real.length - 1]
   ).toFixed(2);
   let comparePhrase = "";
+  let compareStyle = "";
   if (compareToBudget > 0) {
     comparePhrase = "Money saved compared to budget";
     compareStyle = goodHighlight;
@@ -1573,7 +1576,7 @@ function updateCommitmentsTable(tableId) {
 
   Promise.all(promises)
     .then(function () {
-      commitments = splitByRecurrence(financeDetails.commitments);
+      let commitments = splitByRecurrence(financeDetails.commitments);
       let sections = "";
       Object.keys(commitments).forEach((key) => {
         const newSection = createDefaultWidthWidgetSectionHTML(
