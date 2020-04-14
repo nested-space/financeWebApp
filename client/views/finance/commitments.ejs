@@ -110,7 +110,12 @@
       </div>
     </div>
 
-    <script>
+    <script type="module">
+      import {
+        setOneHeaderLinkActive_DeactivateOthers,
+        updateCommitmentsTable,
+      } from "/js/finance.js";
+
       setOneHeaderLinkActive_DeactivateOthers("commitmentsLink");
       $("#lengthHolder").hide();
       updateCommitmentsTable("commitmentsTable");

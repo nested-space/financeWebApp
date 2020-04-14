@@ -82,7 +82,12 @@
       </div>
     </div>
 
-    <script>
+    <script type="module">
+      import {
+        setOneHeaderLinkActive_DeactivateOthers,
+        updateIncomeTable,
+      } from "/js/finance.js";
+
       setOneHeaderLinkActive_DeactivateOthers("incomeLink");
       updateIncomeTable("tables-section");
     </script>

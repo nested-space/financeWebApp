@@ -144,7 +144,12 @@
         style="padding-left: 15px; padding-right: 15px;"
       ></div>
     </div>
-    <script>
+    <script type="module">
+      import {
+        setOneHeaderLinkActive_DeactivateOthers,
+        updateExpensesPage,
+      } from "/js/finance.js";
+
       setOneHeaderLinkActive_DeactivateOthers("expensesLink");
       updateExpensesPage();
     </script>

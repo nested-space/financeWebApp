@@ -1,6 +1,6 @@
 "use strict";
+import { ioColours } from "./constants/DefaultPaletteColours.js";
 
-const currencySymbol = "£";
 const allBudgets = "All budgets";
 const oneDay = 24 * 60 * 60 * 1000;
 const now = new Date(Date.now());
@@ -8,219 +8,16 @@ const now = new Date(Date.now());
 const apiURL = "http://nestedspace.ddns.net:5000/finance/api/";
 const DELETE_SPAN = "<span class='delete fa fa-trash'></span>";
 
-const primary = "#F3D250";
-const primary_md = "#F6DF82";
-const primary_light = "#FCF2CD";
-const primary_very_light = "#fef9e7";
-const primary_dark = "#878754";
-const secondary = "#5DA2D5";
-const secondary_md = "#A2CAE7";
-const secondary_light = "#E8F2F9";
-const secondary_dark = "#3E6C8E";
-const tertiary = "#F78888";
-const tertiary_md = "#F9A6A6";
-const tertiary_light = "#FDE1E1";
-const quaternary = "#90CCF4";
-const quaternary_md = "#ACD9F7";
-const quaternary_light = "#E3F2FC";
-const danger = "#F78888";
-const danger_md = "#FAB0B0";
-const danger_light = "#FAB0B0";
-const success = "#63CC9C";
-const success_md = "#8AD9B5";
-const success_light = "#D8F2E6";
-const lowlight = "#767666";
-
-const colours = [
-  primary,
-  secondary,
-  tertiary,
-  quaternary,
-  success,
-  primary_md,
-  secondary_md,
-  tertiary_md,
-  quaternary_md,
-  success_md,
-  secondary_light,
-  tertiary_light,
-  quaternary_light,
-  success_light,
-];
-
-const ioColours = [success, danger];
-
-/* *********************************************************************** */
-/*                              CHART js callbacks                         */
-/* *********************************************************************** */
-
-const tickMarkCurrencyCallback = function (value, index, values) {
-  let modifier = "";
-  let divisor = 1;
-  if (value >= 1000) {
-    modifier = "K";
-    divisor = 1000;
-  }
-  return currencySymbol + parseFloat(value / divisor).toFixed(0) + modifier;
-};
-
-const chartLabelCurrencyCallback = {
-  label: function (tooltipItems, data) {
-    return (
-      data.labels[tooltipItems.index] +
-      " " +
-      currencySymbol +
-      data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index]
-    );
-  },
-};
-
-/* *********************************************************************** */
-/*                              CHART js OPTIONS                           */
-/* *********************************************************************** */
-
-const modelLineChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  legend: {
-    display: false,
-  },
-  elements: {
-    line: {
-      tension: 0, // disables bezier curves
-    },
-  },
-  scales: {
-    xAxes: [
-      {
-        gridLines: {
-          display: true,
-          color: "#DDDDDD",
-        },
-        ticks: {
-          maxTicksLimit: 5,
-          minRotation: 0,
-          maxRotation: 0,
-        },
-      },
-    ],
-    yAxes: [
-      {
-        gridLines: {
-          display: false,
-        },
-        ticks: {
-          maxTicksLimit: 5,
-          callback: tickMarkCurrencyCallback,
-        },
-      },
-    ],
-  },
-  tooltips: {
-    callbacks: chartLabelCurrencyCallback,
-  },
-};
-
-const horizontalBarChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  legend: {
-    display: false,
-  },
-  tooltips: {
-    callbacks: {
-      label: function (tooltipItems, data) {
-        return (
-          currencySymbol +
-          data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index]
-        );
-      },
-    },
-  },
-  scales: {
-    xAxes: [
-      {
-        gridLines: {
-          display: false,
-        },
-        ticks: {
-          maxTicksLimit: 4,
-          minRotation: 0,
-          maxRotation: 0,
-          min: 0,
-          callback: tickMarkCurrencyCallback,
-        },
-      },
-    ],
-    yAxes: [
-      {
-        gridLines: {
-          display: false,
-        },
-      },
-    ],
-  },
-};
-
-const defaultPieChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  legend: {
-    position: "bottom",
-  },
-  tooltips: {
-    callbacks: chartLabelCurrencyCallback,
-  },
-};
-
-/* *********************************************************************** */
-/*                              CHART js DEFAULTS                          */
-/* *********************************************************************** */
-
-const pieChartDefaults = {
-  label: "",
-  backgroundColor: colours,
-  borderWidth: 0,
-};
-
-const setPointLineDefaults = {
-  label: "Set Point",
-  ptSize: 0,
-  bdColor: colours[1],
-  bdWidth: 2,
-  bdDash: [10, 10],
-  bgColor: colours[2],
-  fillBoolean: false,
-};
-
-const extrapolatedLineDefaults = {
-  label: "Predicted",
-  ptSize: 0,
-  bdColor: colours[4],
-  bdWidth: 2,
-  bdDash: [10, 10],
-  bgColor: colours[3],
-  fillBoolean: false,
-};
-
-const realLineDefaults = {
-  label: "Real",
-  ptSize: 0,
-  bdColor: colours[4],
-  bdWidth: 2,
-  bdDash: [0, 0],
-  bgColor: colours[0],
-  fillBoolean: true,
-};
-
-function setOneHeaderLinkActive_DeactivateOthers(linkId) {
-  document.getElementById("modelLink").classList.remove("active");
-  document.getElementById("budgetsLink").classList.remove("active");
-  document.getElementById("expensesLink").classList.remove("active");
-  document.getElementById("incomeLink").classList.remove("active");
-  document.getElementById("commitmentsLink").classList.remove("active");
-  document.getElementById(linkId).classList.add("active");
-}
+import {
+  currencySymbol,
+  modelLineChartOptions,
+  horizontalBarChartOptions,
+  defaultPieChartOptions,
+  pieChartDefaults,
+  extrapolatedLineDefaults,
+  realLineDefaults,
+  setPointLineDefaults,
+} from "./constants/ChartJSOptions.js";
 
 function updateExpensesPage() {
   const expensesBreakdownChartContainer = document
@@ -368,7 +165,7 @@ function createLineGraphDataSet(data, lineSettings) {
   };
 }
 
-function updateSummaryPage() {
+export function updateSummaryPage() {
   const financeSummaryChartContainer = document
     .getElementById("FinanceIOChart")
     .getContext("2d");
@@ -1525,7 +1322,7 @@ function updateTotalsChart(financeSummaryChartContainer, currencySymbol, io) {
 //                                                                              //
 //------------------------------------------------------------------------------//
 
-function updateBudgetItems(budgetPieChartId, budgetItemsTableId) {
+export function updateBudgetItems(budgetPieChartId, budgetItemsTableId) {
   let financeDetails = {};
 
   let promises = ["budgets"].map(function (suffix) {
@@ -1616,4 +1413,13 @@ function updateIncomeTable(tableId) {
       updateIncomeTableHTML(tableId, financeDetails.income);
     })
     .catch(console.error);
+}
+
+export function setOneHeaderLinkActive_DeactivateOthers(linkId) {
+  document.getElementById("modelLink").classList.remove("active");
+  document.getElementById("budgetsLink").classList.remove("active");
+  document.getElementById("expensesLink").classList.remove("active");
+  document.getElementById("incomeLink").classList.remove("active");
+  document.getElementById("commitmentsLink").classList.remove("active");
+  document.getElementById(linkId).classList.add("active");
 }

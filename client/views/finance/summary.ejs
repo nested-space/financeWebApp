@@ -70,7 +70,12 @@
       </div>
     </div>
 
-    <script>
+    <script type="module">
+      import {
+        setOneHeaderLinkActive_DeactivateOthers,
+        updateSummaryPage,
+      } from "/js/finance.js";
+
       setOneHeaderLinkActive_DeactivateOthers("modelLink");
       updateSummaryPage();
     </script>

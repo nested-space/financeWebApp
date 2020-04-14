@@ -123,10 +123,14 @@
       };
     </script>
 
-    <script>
+    <script type="module">
+      import {
+        setOneHeaderLinkActive_DeactivateOthers,
+        updateBudgetItems,
+      } from "/js/finance.js";
+
       setOneHeaderLinkActive_DeactivateOthers("budgetsLink");
       updateBudgetItems("budgetPieChart", "tables-section");
-      //updateBudgetsTable('');
     </script>
     <script src="/js/bootstrap.min.js" type="text/javascript"></script>
   </body>
