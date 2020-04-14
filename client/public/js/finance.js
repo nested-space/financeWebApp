@@ -1,12 +1,13 @@
 "use strict";
 import { ioColours } from "./constants/DefaultPaletteColours.js";
 
-const allBudgets = "All budgets";
-const oneDay = 24 * 60 * 60 * 1000;
-const now = new Date(Date.now());
-
-const apiURL = "http://nestedspace.ddns.net:5000/finance/api/";
-const DELETE_SPAN = "<span class='delete fa fa-trash'></span>";
+import {
+  getDaysInMonth,
+  getDateString,
+  getShortMonth,
+  isSameDate,
+  setUTCAndZeroHMS,
+} from "./constants/DateUtils.js";
 
 import {
   currencySymbol,
@@ -19,7 +20,14 @@ import {
   setPointLineDefaults,
 } from "./constants/ChartJSOptions.js";
 
-function updateExpensesPage() {
+const allBudgets = "All budgets";
+const oneDay = 24 * 60 * 60 * 1000;
+const now = new Date(Date.now());
+
+const apiURL = "http://nestedspace.ddns.net:5000/finance/api/";
+const DELETE_SPAN = "<span class='delete fa fa-trash'></span>";
+
+export function updateExpensesPage() {
   const expensesBreakdownChartContainer = document
     .getElementById("ExpensesBreakdownChart")
     .getContext("2d");
@@ -52,15 +60,22 @@ function updateExpensesPage() {
       updateExpensesModel("category-select", "ExpensesModelChart");
 
       let expenses = splitByKey(financeDetails.expenses, "category");
-      let sections = "";
-      Object.keys(expenses).forEach((key) => {
-        const newSection = createDefaultWidthWidgetSectionHTML(
-          createSummaryTableHTML(key, expenses[key])
+      let combinedTableHTML = "";
+
+      if (expenses.length > 0) {
+        Object.keys(expenses).forEach((key) => {
+          const newSection = wrapHTMLInBootstrapWidgetHTMLDiv(
+            createSummaryTableHTML(key, expenses[key])
+          );
+          combinedTableHTML += newSection;
+        });
+      } else {
+        combinedTableHTML = wrapHTMLInBootstrapWidgetHTMLDiv(
+          createSummaryTableHTML("No Items Recorded To Date", [])
         );
-        sections += newSection;
-        $(".flat-loader").remove();
-      });
-      document.getElementById("tables-section").innerHTML = sections;
+      }
+      document.getElementById("tables-section").innerHTML = combinedTableHTML;
+      $(".flat-loader").remove();
     })
     .catch(console.error);
 }
@@ -698,60 +713,14 @@ function updateInsights(insightsDiv, totals, model, payday) {
 
 //------------------------------------------------------------------------------//
 //                                                                              //
-//                           DATE UTILITY FUNCTIONS                             //
-//                                                                              //
-//------------------------------------------------------------------------------//
-
-Date.shortMonths = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-// Month here is 1-indexed (January is 1, February is 2, etc). This is
-// because we're using 0 as the day so that it returns the last day
-// of the last month, so you have to add 1 to the month number
-// so it returns the correct amount of days
-function getDaysInMonth(year, month) {
-  return new Date(year, month, 0).getDate();
-}
-
-function getShortMonth(date) {
-  return Date.shortMonths[date.getMonth()];
-}
-
-function getDateString(date) {
-  return date.getDate() + "-" + getShortMonth(date);
-}
-
-function isSameDate(date1, date2) {
-  return (
-    date1.getUTCDate() == date2.getUTCDate() &&
-    date1.getUTCMonth() == date2.getUTCMonth() &&
-    date1.getUTCFullYear() == date2.getUTCFullYear()
-  );
-}
-
-function setUTCAndZeroHMS(date) {
-  return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getDate());
-}
-
-//------------------------------------------------------------------------------//
-//                                                                              //
 //                                   FORMS                                      //
 //                                                                              //
 //------------------------------------------------------------------------------//
 
 function submitAddNewBudgetForm() {
+  const tableName = "Budgets";
+  const budgetsTableId = "tables-section";
+
   const inputDetails = [
     {
       type: "String",
@@ -772,12 +741,15 @@ function submitAddNewBudgetForm() {
       quantity: quantity,
     }),
     function (success, response) {
+      updateTable(budgetsTableId, tableName, new []());
       console.log(response);
     }
   );
 }
 
 function submitAddNewExpenseItemForm() {
+  const expensesTableId = "expensesTable";
+
   const inputDetails = [
     {
       type: "String",
@@ -811,6 +783,7 @@ function submitAddNewExpenseItemForm() {
     }),
 
     function (success, response) {
+      updateExpensesPage(expensesTableId);
       console.log(response);
     }
   );
@@ -1052,7 +1025,6 @@ function postRequestToAddBudget(data, callback) {
 
     if (xhr.status == 201) {
       callback(true, JSON.parse(xhr.response));
-      updateBudgetsTable(budgetsTableId);
     } else {
       callback(false, JSON.parse(xhr.response));
       //TODO: provide feedback to user.
@@ -1085,7 +1057,6 @@ function postRequestToAddExpense(data, callback) {
 
     if (xhr.status == 201) {
       callback(true, JSON.parse(xhr.response));
-      updateExpensesPage(expensesTableId);
     } else {
       callback(false, JSON.parse(xhr.response));
       //TODO: provide feedback to user.
@@ -1184,43 +1155,7 @@ function postRequestToAddIncome(data, callback) {
 //                                                                              //
 //------------------------------------------------------------------------------//
 
-const budgetsTableId = "tables-section";
-const expensesTableId = "expensesTable";
-
-function updateBudgetsTable(tableId, budgets) {
-  console.log(tableId);
-  document.getElementById(tableId).innerHTML = createSummaryTableHTML(
-    "Budgets",
-    budgets
-  );
-  $(".flat-loader").remove();
-}
-
-function updateExpensesTableHTML(tableId, expenses) {
-  document.getElementById(tableId).innerHTML = createSummaryTableHTML(
-    "Expenses",
-    expenses
-  );
-  $(".flat-loader").remove();
-}
-
-function updateCommitmentsTableHTML(tableId, commitments) {
-  document.getElementById(tableId).innerHTML = createSummaryTableHTML(
-    "Commitments",
-    commitments
-  );
-  $(".flat-loader").remove();
-}
-
-function updateIncomeTableHTML(tableId, incomeStreams) {
-  document.getElementById(tableId).innerHTML = createSummaryTableHTML(
-    "Income",
-    incomeStreams
-  );
-  $(".flat-loader").remove();
-}
-
-function createDefaultWidthWidgetSectionHTML(htmlContent) {
+function wrapHTMLInBootstrapWidgetHTMLDiv(htmlContent) {
   return (
     "<div class='col-12 col-md-6 col-xl-4'><div class='p-3 mt-5 grey-bg'>" +
     htmlContent +
@@ -1228,45 +1163,51 @@ function createDefaultWidthWidgetSectionHTML(htmlContent) {
   );
 }
 
-function createSummaryTableHTML(title, items) {
-  let body =
-    "<div style='max-height: 400px; overflow:auto; min-height: 400px; width: 100%; background: white;'><table>";
-  let totalQuantity = 0;
-  for (let i = 0; i < items.length; i++) {
-    body += createSummaryTableRowHTML(items[i]);
-    totalQuantity += items[i].quantity;
-  }
-  body += "</table></div>";
-  console.log(body);
-
-  let html = "<table>";
-  html += "<thead><tr><th>";
-  html += title;
-  html += "</th>";
-  html += "<th class='money-column'>";
-  html += currencySymbol + parseFloat(totalQuantity).toFixed(2);
-  html += "</th></tr></thead>";
-  html += "</table>";
-  html += body;
-  return html;
+function updateTable(tableId, tableTitle, financeItems) {
+  document.getElementById(tableId).innerHTML = createSummaryTableHTML(
+    tableTitle,
+    financeItems
+  );
 }
 
-function createSummaryTableRowHTML(item) {
-  let html = "";
-  html += "<tr>";
+function createSummaryTableHTML(tableTitle, financeItems) {
+  console.log(financeItems.length);
+  let body = "";
+  let totalQuantity = 0;
+  for (let i = 0; i < financeItems.length; i++) {
+    body += createSummaryTableRowHTML(financeItems[i]);
+    totalQuantity += financeItems[i].quantity;
+  }
+
+  let header =
+    "<thead><tr><th>" +
+    tableTitle +
+    "</th>" +
+    "<th class='money-column'>" +
+    currencySymbol +
+    parseFloat(totalQuantity).toFixed(2) +
+    "</th>" +
+    "</tr></thead>";
+
+  return "<table>" + header + body + "</table>";
+}
+
+function createSummaryTableRowHTML(financeItem) {
+  let html = "<tr>";
+
   html += "<td>" + DELETE_SPAN;
 
-  if (item.name.length > 20) {
-    html += item.name.slice(0, 17) + "...";
+  if (financeItem.name.length > 20) {
+    html += financeItem.name.slice(0, 17) + "...";
   } else {
-    html += item.name;
+    html += financeItem.name;
   }
 
   html += "</td>";
   html +=
     "<td class='money-column'>" +
     currencySymbol +
-    parseFloat(item.quantity).toFixed(2) +
+    parseFloat(financeItem.quantity).toFixed(2) +
     "</tr>";
   return html;
 }
@@ -1323,6 +1264,7 @@ function updateTotalsChart(financeSummaryChartContainer, currencySymbol, io) {
 //------------------------------------------------------------------------------//
 
 export function updateBudgetItems(budgetPieChartId, budgetItemsTableId) {
+  let tableName = "Budgets";
   let financeDetails = {};
 
   let promises = ["budgets"].map(function (suffix) {
@@ -1342,7 +1284,8 @@ export function updateBudgetItems(budgetPieChartId, budgetItemsTableId) {
 
   Promise.all(promises)
     .then(function () {
-      updateBudgetsTable(budgetItemsTableId, financeDetails.budgets);
+      updateTable(budgetItemsTableId, tableName, financeDetails.budgets);
+      $(".flat-loader").remove();
       updatePieChartCanvas(
         budgetsContext2D,
         createPieChartDataSet(pieChartDefaults, financeDetails.budgets)
@@ -1351,7 +1294,7 @@ export function updateBudgetItems(budgetPieChartId, budgetItemsTableId) {
     .catch(console.error);
 }
 
-function updateCommitmentsTable(tableId) {
+export function updateCommitmentsTable(tableId) {
   const now = new Date(Date.now());
 
   let commitmentsSuffix = "commitments/";
@@ -1376,18 +1319,19 @@ function updateCommitmentsTable(tableId) {
       let commitments = splitByRecurrence(financeDetails.commitments);
       let sections = "";
       Object.keys(commitments).forEach((key) => {
-        const newSection = createDefaultWidthWidgetSectionHTML(
+        const newSection = wrapHTMLInBootstrapWidgetHTMLDiv(
           createSummaryTableHTML(key, commitments[key])
         );
         sections += newSection;
-        $(".flat-loader").remove();
       });
-      document.getElementById("tables-section").innerHTML = sections;
+      document.getElementById(tableId).innerHTML = sections;
+      $(".flat-loader").remove();
     })
     .catch(console.error);
 }
 
-function updateIncomeTable(tableId) {
+export function updateIncomeTable(tableId) {
+  const tableName = "Income";
   const date = new Date(Date.now());
 
   let financeDetails = {};
@@ -1410,7 +1354,8 @@ function updateIncomeTable(tableId) {
   Promise.all(promises)
     .then(function () {
       console.log(financeDetails.income);
-      updateIncomeTableHTML(tableId, financeDetails.income);
+      updateTable(tableId, tableName, financeDetails.income);
+      $(".flat-loader").remove();
     })
     .catch(console.error);
 }
