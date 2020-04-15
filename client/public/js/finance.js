@@ -36,7 +36,7 @@ export function updateExpensesPage() {
   let promises = ["budgets", "expenses"].map(function (suffix) {
     return new Promise(function (resolve, reject) {
       const urlSuffix = suffix + "/" + now.getFullYear() + "/" + now.getMonth();
-      getRequestToAPI(urlSuffix, function (success, results) {
+      executeGetRequest(apiURL + urlSuffix, function (success, results) {
         if (success) {
           financeDetails[suffix] = results;
           resolve();
@@ -64,14 +64,13 @@ export function updateExpensesPage() {
 
       if (expenses.length > 0) {
         Object.keys(expenses).forEach((key) => {
-          const newSection = wrapHTMLInBootstrapWidgetHTMLDiv(
-            createSummaryTableHTML(key, expenses[key])
-          );
+          const newSection = createSummaryTableHTML(key, expenses[key]);
           combinedTableHTML += newSection;
         });
       } else {
-        combinedTableHTML = wrapHTMLInBootstrapWidgetHTMLDiv(
-          createSummaryTableHTML("No Items Recorded To Date", [])
+        combinedTableHTML = createSummaryTableHTML(
+          "No Items Recorded To Date",
+          []
         );
       }
       document.getElementById("tables-section").innerHTML = combinedTableHTML;
@@ -85,7 +84,7 @@ function updateExpensesModel(dropdownId, chartId) {
   let promises = ["budgets", "expenses"].map(function (suffix) {
     return new Promise(function (resolve, reject) {
       const urlSuffix = suffix + "/" + now.getFullYear() + "/" + now.getMonth();
-      getRequestToAPI(urlSuffix, function (success, results) {
+      executeGetRequest(apiURL + urlSuffix, function (success, results) {
         if (success) {
           financeDetails[suffix] = results;
           resolve();
@@ -201,7 +200,7 @@ export function updateSummaryPage() {
   ) {
     return new Promise(function (resolve, reject) {
       const urlSuffix = suffix + "/" + now.getFullYear() + "/" + now.getMonth();
-      getRequestToAPI(urlSuffix, function (success, results) {
+      executeGetRequest(apiURL + urlSuffix, function (success, results) {
         if (success) {
           financeDetails[suffix] = results;
           resolve();
@@ -248,7 +247,7 @@ export function updateSummaryPage() {
         financeDetails.commitments,
         financeDetails.income
       );
-      updateTotalsChart(financeSummaryChartContainer, currencySymbol, totals);
+      updateTotalsChart(financeSummaryChartContainer, totals);
 
       let financeModel = getFinanceModel(financeDetails, startDate, endDate);
 
@@ -741,7 +740,9 @@ function submitAddNewBudgetForm() {
       quantity: quantity,
     }),
     function (success, response) {
-      updateTable(budgetsTableId, tableName, new []());
+      document.getElementById(
+        budgetsTableId
+      ).innerHTML = createSummaryTableHTML(tableName, []);
       console.log(response);
     }
   );
@@ -997,18 +998,6 @@ function updateLengthVisibility(frequencySelectorId, lengthContainerId) {
 //                                                                              //
 //------------------------------------------------------------------------------//
 
-function getRequestToAPI(suffix, callback) {
-  let xhr = new XMLHttpRequest();
-  xhr.open("GET", apiURL + suffix, true);
-  xhr.onload = function () {
-    callback(true, JSON.parse(this.responseText));
-  };
-  xhr.onerror = function () {
-    callback(false, {});
-  };
-  xhr.send();
-}
-
 function postRequestToAddBudget(data, callback) {
   let xhr = window.XMLHttpRequest
     ? new XMLHttpRequest()
@@ -1093,7 +1082,7 @@ function postRequestToAddCommitment(data, callback) {
 
     if (xhr.status == 201) {
       callback(true, JSON.parse(xhr.response));
-      updateCommitmentsTable("commitmentsTable");
+      updateTableFromServer("commitmentsTable", "Commitments");
     } else {
       callback(false, JSON.parse(xhr.response));
       //TODO: provide feedback to user.
@@ -1131,7 +1120,7 @@ function postRequestToAddIncome(data, callback) {
 
     if (xhr.status == 201) {
       callback(true, JSON.parse(xhr.response));
-      updateIncomeTable("tables-section");
+      updateTableFromServer("tables-section", "Income");
     } else {
       callback(false, JSON.parse(xhr.response));
       //TODO: provide feedback to user.
@@ -1155,23 +1144,7 @@ function postRequestToAddIncome(data, callback) {
 //                                                                              //
 //------------------------------------------------------------------------------//
 
-function wrapHTMLInBootstrapWidgetHTMLDiv(htmlContent) {
-  return (
-    "<div class='col-12 col-md-6 col-xl-4'><div class='p-3 mt-5 grey-bg'>" +
-    htmlContent +
-    "</div></div>"
-  );
-}
-
-function updateTable(tableId, tableTitle, financeItems) {
-  document.getElementById(tableId).innerHTML = createSummaryTableHTML(
-    tableTitle,
-    financeItems
-  );
-}
-
 function createSummaryTableHTML(tableTitle, financeItems) {
-  console.log(financeItems.length);
   let body = "";
   let totalQuantity = 0;
   for (let i = 0; i < financeItems.length; i++) {
@@ -1237,7 +1210,7 @@ function updatePieChartCanvas(commitmentsChartContainer, items) {
   });
 }
 
-function updateTotalsChart(financeSummaryChartContainer, currencySymbol, io) {
+function updateTotalsChart(financeSummaryChartContainer, io) {
   const myBarChart = new Chart(financeSummaryChartContainer, {
     type: "horizontalBar",
     data: {
@@ -1265,99 +1238,56 @@ function updateTotalsChart(financeSummaryChartContainer, currencySymbol, io) {
 
 export function updateBudgetItems(budgetPieChartId, budgetItemsTableId) {
   let tableName = "Budgets";
-  let financeDetails = {};
-
-  let promises = ["budgets"].map(function (suffix) {
-    return new Promise(function (resolve, reject) {
-      getRequestToAPI(suffix, function (success, results) {
-        if (success) {
-          financeDetails[suffix] = results;
-          resolve();
-        } else {
-          reject();
-        }
-      });
-    });
-  });
-
   const budgetsContext2D = document.getElementById(budgetPieChartId);
-
-  Promise.all(promises)
-    .then(function () {
-      updateTable(budgetItemsTableId, tableName, financeDetails.budgets);
-      $(".flat-loader").remove();
-      updatePieChartCanvas(
-        budgetsContext2D,
-        createPieChartDataSet(pieChartDefaults, financeDetails.budgets)
-      );
-    })
-    .catch(console.error);
-}
-
-export function updateCommitmentsTable(tableId) {
-  const now = new Date(Date.now());
-
-  let commitmentsSuffix = "commitments/";
-  commitmentsSuffix += now.getUTCFullYear() + "/";
-  commitmentsSuffix += now.getUTCMonth();
-  let financeDetails = {};
-  let promises = [commitmentsSuffix].map(function (suffix) {
-    return new Promise(function (resolve, reject) {
-      getRequestToAPI(suffix, function (success, results) {
-        if (success) {
-          financeDetails.commitments = results;
-          resolve();
-        } else {
-          reject();
-        }
-      });
-    });
-  });
-
-  Promise.all(promises)
-    .then(function () {
-      let commitments = splitByRecurrence(financeDetails.commitments);
-      let sections = "";
-      Object.keys(commitments).forEach((key) => {
-        const newSection = wrapHTMLInBootstrapWidgetHTMLDiv(
-          createSummaryTableHTML(key, commitments[key])
+  executeGetRequest(
+    generateFinanceAPIHTML(tableName, now),
+    (success, results) => {
+      if (success) {
+        updatePieChartCanvas(
+          budgetsContext2D,
+          createPieChartDataSet(pieChartDefaults, results)
         );
-        sections += newSection;
-      });
-      document.getElementById(tableId).innerHTML = sections;
+      }
       $(".flat-loader").remove();
-    })
-    .catch(console.error);
+    }
+  );
+
+  updateTableFromServer(budgetItemsTableId, tableName);
 }
 
-export function updateIncomeTable(tableId) {
-  const tableName = "Income";
-  const date = new Date(Date.now());
-
-  let financeDetails = {};
-  let incomeSuffix = "income/";
-  incomeSuffix += date.getUTCFullYear() + "/";
-  incomeSuffix += date.getUTCMonth();
-  let promises = [incomeSuffix].map(function (suffix) {
-    return new Promise(function (resolve, reject) {
-      getRequestToAPI(suffix, function (success, results) {
-        if (success) {
-          financeDetails.income = results;
-          resolve();
-        } else {
-          reject();
-        }
-      });
-    });
-  });
-
-  Promise.all(promises)
-    .then(function () {
-      console.log(financeDetails.income);
-      updateTable(tableId, tableName, financeDetails.income);
+export function updateTableFromServer(DOMSectionId, financeItemType) {
+  executeGetRequest(
+    generateFinanceAPIHTML(financeItemType, now),
+    (success, results) => {
+      if (success) {
+        let newTable = createSummaryTableHTML(financeItemType, results);
+        document.getElementById(DOMSectionId).innerHTML = newTable;
+      }
       $(".flat-loader").remove();
-    })
-    .catch(console.error);
+    }
+  );
+}
+
+function generateFinanceAPIHTML(itemType, date) {
+  if (!date) {
+    return apiURL + itemType;
+  } else {
+    return (
+      apiURL + itemType + "/" + date.getUTCFullYear() + "/" + date.getUTCMonth()
+    );
+  }
+}
+
+function executeGetRequest(url, callback) {
+  let xhr = new XMLHttpRequest();
+  xhr.open("GET", url, true);
+  xhr.onload = function () {
+    callback(true, JSON.parse(this.responseText));
+  };
+  xhr.onerror = function () {
+    callback(false, {});
+  };
+  xhr.send();
 }
 
 export function setOneHeaderLinkActive_DeactivateOthers(linkId) {

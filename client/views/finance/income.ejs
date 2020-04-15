@@ -63,8 +63,6 @@
           </button>
           <div id="loadStatus"></div>
         </div>
-      </div>
-      <div class="row justify-content-center">
         <div class="col-12 col-sm-8 p-3 mt-5 grey-bg">
           <div
             id="tables-section"
@@ -85,11 +83,11 @@
     <script type="module">
       import {
         setOneHeaderLinkActive_DeactivateOthers,
-        updateIncomeTable,
+        updateTableFromServer,
       } from "/js/finance.js";
 
       setOneHeaderLinkActive_DeactivateOthers("incomeLink");
-      updateIncomeTable("tables-section");
+      updateTableFromServer("tables-section", "Income");
     </script>
   </body>
 </html>
