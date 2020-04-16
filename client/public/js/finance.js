@@ -1,5 +1,6 @@
-"use strict";
-import { ioColours } from "./constants/DefaultPaletteColours.js";
+("use strict");
+
+import { ioColours } from "./FinanceUtil/DefaultPaletteColours.js";
 
 import {
   getDaysInMonth,
@@ -7,7 +8,7 @@ import {
   getShortMonth,
   isSameDate,
   setUTCAndZeroHMS,
-} from "./constants/DateUtils.js";
+} from "./FinanceUtil/DateUtils.js";
 
 import {
   currencySymbol,
@@ -18,7 +19,7 @@ import {
   extrapolatedLineDefaults,
   realLineDefaults,
   setPointLineDefaults,
-} from "./constants/ChartJSOptions.js";
+} from "./FinanceUtil/ChartJSOptions.js";
 
 const allBudgets = "All budgets";
 const oneDay = 24 * 60 * 60 * 1000;
@@ -27,157 +28,9 @@ const now = new Date(Date.now());
 const apiURL = "http://nestedspace.ddns.net:5000/finance/api/";
 const DELETE_SPAN = "<span class='delete fa fa-trash'></span>";
 
-export function updateExpensesPage() {
-  const expensesBreakdownChartContainer = document
-    .getElementById("ExpensesBreakdownChart")
-    .getContext("2d");
-  let financeDetails = {};
-
-  let promises = ["budgets", "expenses"].map(function (suffix) {
-    return new Promise(function (resolve, reject) {
-      const urlSuffix = suffix + "/" + now.getFullYear() + "/" + now.getMonth();
-      executeGetRequest(apiURL + urlSuffix, function (success, results) {
-        if (success) {
-          financeDetails[suffix] = results;
-          resolve();
-        } else {
-          reject();
-        }
-      });
-    });
-  });
-
-  Promise.all(promises)
-    .then(function () {
-      updatePieChartCanvas(
-        expensesBreakdownChartContainer,
-        createPieChartDataSet(
-          pieChartDefaults,
-          summariseByCategory(financeDetails.expenses)
-        )
-      );
-
-      updateExpensesModel("category-select", "ExpensesModelChart");
-
-      let expenses = splitByKey(financeDetails.expenses, "category");
-      let combinedTableHTML = "";
-
-      if (expenses.length > 0) {
-        Object.keys(expenses).forEach((key) => {
-          const newSection = createSummaryTableHTML(key, expenses[key]);
-          combinedTableHTML += newSection;
-        });
-      } else {
-        combinedTableHTML = createSummaryTableHTML(
-          "No Items Recorded To Date",
-          []
-        );
-      }
-      document.getElementById("tables-section").innerHTML = combinedTableHTML;
-      $(".flat-loader").remove();
-    })
-    .catch(console.error);
-}
-
-function updateExpensesModel(dropdownId, chartId) {
-  let financeDetails = {};
-  let promises = ["budgets", "expenses"].map(function (suffix) {
-    return new Promise(function (resolve, reject) {
-      const urlSuffix = suffix + "/" + now.getFullYear() + "/" + now.getMonth();
-      executeGetRequest(apiURL + urlSuffix, function (success, results) {
-        if (success) {
-          financeDetails[suffix] = results;
-          resolve();
-        } else {
-          reject();
-        }
-      });
-    });
-  });
-
-  Promise.all(promises).then(function () {
-    let selected = document.getElementById(dropdownId).value;
-
-    if (selected != allBudgets) {
-      financeDetails.expenses = splitByKey(financeDetails.expenses, "category")[
-        selected
-      ];
-      financeDetails.budgets = getByName(financeDetails.budgets, selected);
-    }
-
-    //TODO: extract timeframe determination into separate method
-    let then = new Date(Date.now());
-    then.setMonth(then.getUTCMonth() - 1);
-    then.setDate(30);
-    const difference = Math.round(
-      Math.abs((now.getTime() - then.getTime()) / oneDay)
-    );
-    let startDate = new Date(Date.now());
-    startDate.setDate(startDate.getDate() - difference);
-    let endDate = new Date(Date.now());
-    endDate.setDate(0);
-    endDate.setDate(endDate.getDate() + 30);
-
-    let financeModel = getFinanceModel(financeDetails, startDate, endDate);
-    const setPoint = getTotalBudget(financeDetails.budgets);
-    const formattedModel = cumulativeModel(financeModel, setPoint);
-
-    const data = {
-      labels: formattedModel.labels,
-      datasets: [
-        createLineGraphDataSet(formattedModel.setPoint, setPointLineDefaults),
-        createLineGraphDataSet(
-          formattedModel.predicted,
-          extrapolatedLineDefaults
-        ),
-        createLineGraphDataSet(formattedModel.real, realLineDefaults),
-      ],
-    };
-    const chartContainer = document.getElementById(chartId);
-    updateFinanceModelChart(chartContainer, data);
-  });
-}
-
-function formatFinanceForChart(financeItems) {
-  let labels = [];
-  let data = [];
-  for (let i = 0; i < financeItems.length; i++) {
-    labels.push(financeItems[i].name);
-    data.push(parseFloat(financeItems[i].quantity).toFixed(2));
-  }
-
-  return {
-    labels: labels,
-    data: data,
-  };
-}
-
-function createPieChartDataSet(settings, items) {
-  let formattedItems = formatFinanceForChart(items);
-  return {
-    labels: formattedItems.labels,
-    datasets: [
-      {
-        data: formattedItems.data,
-        backgroundColor: settings.backgroundColor,
-        borderWidth: settings.borderWidth,
-      },
-    ],
-  };
-}
-
-function createLineGraphDataSet(data, lineSettings) {
-  return {
-    data: data,
-    label: lineSettings.label,
-    borderColor: lineSettings.bdColor,
-    borderWidth: lineSettings.bdWidth,
-    borderDash: lineSettings.bdDash,
-    pointRadius: lineSettings.ptSize,
-    backgroundColor: lineSettings.bgColor,
-    fill: lineSettings.fillBoolean,
-  };
-}
+//------------------------------------------------------------------------------//
+//             Whole Page Updates - to be removed / refactored                  //
+//------------------------------------------------------------------------------//
 
 export function updateSummaryPage() {
   const financeSummaryChartContainer = document
@@ -242,17 +95,24 @@ export function updateSummaryPage() {
         )
       );
 
-      let totals = getTotals(
+      let totals = getIOObjectFromBudgetsCommitmentsAndIncome(
         financeDetails.budgets,
         financeDetails.commitments,
         financeDetails.income
       );
       updateTotalsChart(financeSummaryChartContainer, totals);
 
-      let financeModel = getFinanceModel(financeDetails, startDate, endDate);
+      let financeModel = createTimeSeriesFinanceModelData(
+        financeDetails,
+        startDate,
+        endDate
+      );
 
       const initialValue = 2413.56;
-      const formattedModel = subtractiveModel(financeModel, initialValue);
+      const formattedModel = createTimeSeriesSubtractiveDataWithYSetPoint(
+        financeModel,
+        initialValue
+      );
       const data = {
         labels: formattedModel.labels,
         datasets: [
@@ -281,39 +141,262 @@ export function updateSummaryPage() {
     .catch(console.error);
 }
 
-function getBudgetModel(budgets, expenses, startDate, endDate) {
-  if (startDate > endDate) return;
+export function updateExpensesPage() {
+  const expensesBreakdownChartContainer = document
+    .getElementById("ExpensesBreakdownChart")
+    .getContext("2d");
+  let financeDetails = {};
 
-  const currentDate = setUTCAndZeroHMS(startDate);
-  const end_date_utc = setUTCAndZeroHMS(endDate);
-  const now = setUTCAndZeroHMS(new Date(Date.now()));
-  let financeModel = {};
-
-  while (currentDate <= end_date_utc) {
-    financeModel[currentDate] = {};
-    financeModel[currentDate].predicted = 0;
-    financeModel[currentDate].real = 0;
-
-    const budgetCostForDay = getBudgetCostForDay(currentDate, budgets);
-    financeModel[currentDate].predicted =
-      financeModel[currentDate].predicted + budgetCostForDay;
-    if (currentDate > now) {
-      financeModel[currentDate].real =
-        financeModel[currentDate].real + budgetCostForDay;
-    }
-
-    expenses.forEach((item) => {
-      let itemDate = new Date(item.date);
-      if (isSameDate(itemDate, currentDate))
-        financeModel[currentDate].real =
-          financeModel[currentDate].real + item.quantity;
+  let promises = ["budgets", "expenses"].map(function (suffix) {
+    return new Promise(function (resolve, reject) {
+      const urlSuffix = suffix + "/" + now.getFullYear() + "/" + now.getMonth();
+      executeGetRequest(apiURL + urlSuffix, function (success, results) {
+        if (success) {
+          financeDetails[suffix] = results;
+          resolve();
+        } else {
+          reject();
+        }
+      });
     });
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-  return financeModel;
+  });
+
+  Promise.all(promises)
+    .then(function () {
+      updatePieChartCanvas(
+        expensesBreakdownChartContainer,
+        createPieChartDataSet(
+          pieChartDefaults,
+          summariseByCategory(financeDetails.expenses)
+        )
+      );
+
+      updateExpensesGraphBasedOnDropDownSelection(
+        "category-select",
+        "ExpensesModelChart"
+      );
+
+      let expenses = splitByKey(financeDetails.expenses, "category");
+      let combinedTableHTML = "";
+
+      if (expenses.length > 0) {
+        Object.keys(expenses).forEach((key) => {
+          const newSection = createSummaryTableHTML(key, expenses[key]);
+          combinedTableHTML += newSection;
+        });
+      } else {
+        combinedTableHTML = createSummaryTableHTML(
+          "No Items Recorded To Date",
+          []
+        );
+      }
+      document.getElementById("tables-section").innerHTML = combinedTableHTML;
+      $(".flat-loader").remove();
+    })
+    .catch(console.error);
 }
 
-function getFinanceModel(financeDetails, startDate, endDate) {
+export function updateExpensesGraphBasedOnDropDownSelection(
+  dropdownId,
+  chartId
+) {
+  let financeDetails = {};
+  let promises = ["budgets", "expenses"].map(function (suffix) {
+    return new Promise(function (resolve, reject) {
+      const urlSuffix = suffix + "/" + now.getFullYear() + "/" + now.getMonth();
+      executeGetRequest(apiURL + urlSuffix, function (success, results) {
+        if (success) {
+          financeDetails[suffix] = results;
+          resolve();
+        } else {
+          reject();
+        }
+      });
+    });
+  });
+
+  Promise.all(promises).then(function () {
+    let selected = document.getElementById(dropdownId).value;
+
+    if (selected != allBudgets) {
+      financeDetails.expenses = splitByKey(financeDetails.expenses, "category")[
+        selected
+      ];
+      financeDetails.budgets = getAllItemsWithStatedName(
+        financeDetails.budgets,
+        selected
+      );
+    }
+
+    //TODO: extract timeframe determination into separate method
+    let then = new Date(Date.now());
+    then.setMonth(then.getUTCMonth() - 1);
+    then.setDate(30);
+    const difference = Math.round(
+      Math.abs((now.getTime() - then.getTime()) / oneDay)
+    );
+    let startDate = new Date(Date.now());
+    startDate.setDate(startDate.getDate() - difference);
+    let endDate = new Date(Date.now());
+    endDate.setDate(0);
+    endDate.setDate(endDate.getDate() + 30);
+
+    let financeModel = createTimeSeriesFinanceModelData(
+      financeDetails,
+      startDate,
+      endDate
+    );
+    const setPoint = getTotalBudget(financeDetails.budgets);
+    const formattedModel = createTimeSeriesCumulativeDataYSetPoint(
+      financeModel,
+      setPoint
+    );
+
+    const data = {
+      labels: formattedModel.labels,
+      datasets: [
+        createLineGraphDataSet(formattedModel.setPoint, setPointLineDefaults),
+        createLineGraphDataSet(
+          formattedModel.predicted,
+          extrapolatedLineDefaults
+        ),
+        createLineGraphDataSet(formattedModel.real, realLineDefaults),
+      ],
+    };
+    const chartContainer = document.getElementById(chartId);
+    updateFinanceModelChart(chartContainer, data);
+  });
+}
+
+//------------------------------------------------------------------------------//
+//                           Direct Table Update Methods                        //
+//------------------------------------------------------------------------------//
+
+export function updateBudgetItems(budgetPieChartId, budgetItemsTableId) {
+  let tableName = "Budgets";
+  const budgetsContext2D = document.getElementById(budgetPieChartId);
+  executeGetRequest(
+    generateFinanceAPIURL(tableName, now),
+    (success, results) => {
+      if (success) {
+        updatePieChartCanvas(
+          budgetsContext2D,
+          createPieChartDataSet(pieChartDefaults, results)
+        );
+      }
+      $(".flat-loader").remove();
+    }
+  );
+
+  updateTableFromServer(budgetItemsTableId, tableName);
+}
+
+export function updateTableFromServer(DOMSectionId, financeItemType) {
+  executeGetRequest(
+    generateFinanceAPIURL(financeItemType, now),
+    (success, results) => {
+      if (success) {
+        let newTable = createSummaryTableHTML(financeItemType, results);
+        document.getElementById(DOMSectionId).innerHTML = newTable;
+      }
+      $(".flat-loader").remove();
+    }
+  );
+}
+
+//------------------------------------------------------------------------------//
+//                           Direct Chart Update Methods                        //
+//------------------------------------------------------------------------------//
+
+function updateFinanceModelChart(financeModelChartContainer, data) {
+  const myChart = new Chart(financeModelChartContainer, {
+    type: "line",
+    data: data,
+    options: modelLineChartOptions,
+  });
+}
+
+function updatePieChartCanvas(commitmentsChartContainer, items) {
+  const chart = new Chart(commitmentsChartContainer, {
+    type: "pie",
+    data: {
+      labels: items.labels,
+      datasets: items.datasets,
+    },
+    options: defaultPieChartOptions,
+  });
+}
+
+function updateTotalsChart(financeSummaryChartContainer, io) {
+  const myBarChart = new Chart(financeSummaryChartContainer, {
+    type: "horizontalBar",
+    data: {
+      labels: ["Income", "Outgoings"],
+      datasets: [
+        {
+          data: [
+            parseFloat(io.income).toFixed(2),
+            parseFloat(io.outgoings).toFixed(2),
+          ],
+          backgroundColor: ioColours,
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: horizontalBarChartOptions,
+  });
+}
+
+//------------------------------------------------------------------------------//
+//                            Prepare Data For Graphs                           //
+//------------------------------------------------------------------------------//
+
+function createPieChartDataSet(settings, items) {
+  let formattedItems = formatFinanceForPieChart(items);
+  return {
+    labels: formattedItems.labels,
+    datasets: [
+      {
+        data: formattedItems.data,
+        backgroundColor: settings.backgroundColor,
+        borderWidth: settings.borderWidth,
+      },
+    ],
+  };
+}
+
+function formatFinanceForPieChart(financeItems) {
+  let labels = [];
+  let data = [];
+  for (let i = 0; i < financeItems.length; i++) {
+    labels.push(financeItems[i].name);
+    data.push(parseFloat(financeItems[i].quantity).toFixed(2));
+  }
+
+  return {
+    labels: labels,
+    data: data,
+  };
+}
+
+function createLineGraphDataSet(data, lineSettings) {
+  return {
+    data: data,
+    label: lineSettings.label,
+    borderColor: lineSettings.bdColor,
+    borderWidth: lineSettings.bdWidth,
+    borderDash: lineSettings.bdDash,
+    pointRadius: lineSettings.ptSize,
+    backgroundColor: lineSettings.bgColor,
+    fill: lineSettings.fillBoolean,
+  };
+}
+
+//------------------------------------------------------------------------------//
+//                  Curate Data Sets Into Consistent Format                     //
+//------------------------------------------------------------------------------//
+
+function createTimeSeriesFinanceModelData(financeDetails, startDate, endDate) {
   if (startDate > endDate) return;
 
   const currentDate = setUTCAndZeroHMS(startDate);
@@ -368,6 +451,93 @@ function getFinanceModel(financeDetails, startDate, endDate) {
   }
   return financeModel;
 }
+
+function createTimeSeriesCumulativeDataYSetPoint(financeModel, setPointValue) {
+  let setPoint = [];
+  let real = [];
+  let predicted = [];
+  let labels = [];
+  const now = new Date(Date.now());
+  let currentValue = 0;
+  Object.keys(financeModel).forEach(function (key) {
+    let currentDate = new Date(key);
+    setPoint.push(parseFloat(setPointValue).toFixed(2));
+
+    if (isSameDate(currentDate, now)) {
+      currentValue -= financeModel[key].real;
+      real.push(parseFloat(currentValue).toFixed(2));
+      predicted.push(parseFloat(currentValue).toFixed(2));
+    } else if (currentDate <= now) {
+      currentValue -= financeModel[key].real;
+      real.push(parseFloat(currentValue).toFixed(2));
+      predicted.push(null);
+    } else {
+      currentValue -= financeModel[key].predicted;
+      predicted.push(parseFloat(currentValue).toFixed(2));
+    }
+    labels.push(getDateString(new Date(key)));
+  });
+
+  let formattedModel = {
+    setPoint: setPoint,
+    real: real,
+    predicted: predicted,
+    labels: labels,
+  };
+  return formattedModel;
+}
+
+function createTimeSeriesSubtractiveDataWithYSetPoint(
+  financeModel,
+  initialValue
+) {
+  let predicted = [];
+  let real = [];
+  let next = [];
+  let labels = [];
+  const now = new Date(Date.now());
+
+  let currentReal = initialValue;
+  let currentPredicted = initialValue;
+  Object.keys(financeModel).forEach(function (key) {
+    let currentDate = new Date(key);
+
+    if (
+      currentDate.getDate() == now.getDate() &&
+      currentDate.getUTCMonth() == now.getUTCMonth()
+    ) {
+      currentReal += financeModel[key].real;
+      real.push(parseFloat(currentReal).toFixed(2));
+      next.push(parseFloat(currentReal).toFixed(2));
+
+      currentPredicted += financeModel[key].predicted;
+      predicted.push(parseFloat(currentPredicted).toFixed(2));
+    } else if (currentDate <= now) {
+      currentReal += financeModel[key].real;
+      real.push(parseFloat(currentReal).toFixed(2));
+      next.push(null);
+
+      currentPredicted += financeModel[key].predicted;
+      predicted.push(parseFloat(currentPredicted).toFixed(2));
+    } else {
+      currentReal += financeModel[key].predicted;
+      next.push(parseFloat(currentReal).toFixed(2));
+    }
+    labels.push(getDateString(new Date(key)));
+  });
+
+  let formattedModel = {
+    predicted: predicted,
+    real: real,
+    next: next,
+    labels: labels,
+  };
+  return formattedModel;
+}
+
+//------------------------------------------------------------------------------//
+//                          Data Curation Utility Methods                       //
+//------------------------------------------------------------------------------//
 
 function constraintsFulfilled(item, currentDate) {
   //TODO: if the monthly commitment occurs on a date that doesn't exist in this month (i.e 31st in September), take it out early.
@@ -427,85 +597,6 @@ function getTotalBudget(budgets) {
   return totalBudget;
 }
 
-function cumulativeModel(financeModel, setPointValue) {
-  let setPoint = [];
-  let real = [];
-  let predicted = [];
-  let labels = [];
-  const now = new Date(Date.now());
-  let currentValue = 0;
-  Object.keys(financeModel).forEach(function (key) {
-    let currentDate = new Date(key);
-    setPoint.push(parseFloat(setPointValue).toFixed(2));
-
-    if (isSameDate(currentDate, now)) {
-      currentValue -= financeModel[key].real;
-      real.push(parseFloat(currentValue).toFixed(2));
-      predicted.push(parseFloat(currentValue).toFixed(2));
-    } else if (currentDate <= now) {
-      currentValue -= financeModel[key].real;
-      real.push(parseFloat(currentValue).toFixed(2));
-      predicted.push(null);
-    } else {
-      currentValue -= financeModel[key].predicted;
-      predicted.push(parseFloat(currentValue).toFixed(2));
-    }
-    labels.push(getDateString(new Date(key)));
-  });
-
-  let formattedModel = {
-    setPoint: setPoint,
-    real: real,
-    predicted: predicted,
-    labels: labels,
-  };
-  return formattedModel;
-}
-function subtractiveModel(financeModel, initialValue) {
-  let predicted = [];
-  let real = [];
-  let next = [];
-  let labels = [];
-  const now = new Date(Date.now());
-
-  let currentReal = initialValue;
-  let currentPredicted = initialValue;
-  Object.keys(financeModel).forEach(function (key) {
-    let currentDate = new Date(key);
-
-    if (
-      currentDate.getDate() == now.getDate() &&
-      currentDate.getUTCMonth() == now.getUTCMonth()
-    ) {
-      currentReal += financeModel[key].real;
-      real.push(parseFloat(currentReal).toFixed(2));
-      next.push(parseFloat(currentReal).toFixed(2));
-
-      currentPredicted += financeModel[key].predicted;
-      predicted.push(parseFloat(currentPredicted).toFixed(2));
-    } else if (currentDate <= now) {
-      currentReal += financeModel[key].real;
-      real.push(parseFloat(currentReal).toFixed(2));
-      next.push(null);
-
-      currentPredicted += financeModel[key].predicted;
-      predicted.push(parseFloat(currentPredicted).toFixed(2));
-    } else {
-      currentReal += financeModel[key].predicted;
-      next.push(parseFloat(currentReal).toFixed(2));
-    }
-    labels.push(getDateString(new Date(key)));
-  });
-
-  let formattedModel = {
-    predicted: predicted,
-    real: real,
-    next: next,
-    labels: labels,
-  };
-  return formattedModel;
-}
-
 function summariseByCategory(items) {
   let categoryItems = {};
   items.forEach(function (item) {
@@ -553,7 +644,7 @@ function splitByRecurrence(items) {
   return splitItems;
 }
 
-function getByName(items, itemName) {
+function getAllItemsWithStatedName(items, itemName) {
   let selectedItems = [];
   items.forEach((item) => {
     if (item.name == itemName) {
@@ -563,15 +654,19 @@ function getByName(items, itemName) {
   return selectedItems;
 }
 
-function getTotals(budgets, commitments, income) {
+function getIOObjectFromBudgetsCommitmentsAndIncome(
+  budgets,
+  commitments,
+  income
+) {
   let totalIncome = 0;
   let totalOutgoings = 0;
 
-  commitments.forEach(function (item) {
+  commitments.forEach((item) => {
     totalOutgoings += item.quantity;
   });
 
-  budgets.forEach(function (item) {
+  budgets.forEach((item) => {
     totalOutgoings += item.quantity;
   });
 
@@ -585,121 +680,11 @@ function getTotals(budgets, commitments, income) {
   };
 }
 
-//------------------------------------------------------------------------------//
-//                                                                              //
-//                                    INSIGHTS                                  //
-//                                                                              //
-//------------------------------------------------------------------------------//
-
-function getBalanceInsight(model) {
-  let compareToBudget = parseFloat(
-    model.real[model.real.length - 1] - model.predicted[model.real.length - 1]
-  ).toFixed(2);
-  let comparePhrase = "";
-  let compareStyle = "";
-  if (compareToBudget > 0) {
-    comparePhrase = "Money saved compared to budget";
-    compareStyle = goodHighlight;
-  } else {
-    comparePhrase = "Money spent over budget";
-    compareToBudget = parseFloat(-compareToBudget).toFixed(2);
-    compareStyle = badHighlight;
-  }
-
-  let lowest = model.real[0];
-  for (let i = 0; i < model.real.length; i++) {
-    const real = parseFloat(model.real[i]);
-    if (lowest > model.real[i]) {
-      lowest = real;
-    }
-  }
-
-  let lowestStyle;
-  if (lowest > 0) {
-    lowestStyle = goodHighlight;
-  } else {
-    lowestStyle = badHighlight;
-  }
-
-  const balanceInsight = {
-    icon: "fa-temperature-low",
-    contents: [
-      {
-        text: "Month's lowest balance",
-        value: lowest,
-        style: lowestStyle,
-      },
-      {
-        text: comparePhrase,
-        value: compareToBudget,
-        style: compareStyle,
-      },
-    ],
-  };
-
-  return balanceInsight;
-}
-
-function getSpendsInsight(model) {
-  const spendsInsight = {
-    icon: "fa-running",
-    contents: [
-      {
-        text: "Spent this month",
-        value: parseFloat(
-          model.real[0] - model.real[model.real.length - 1]
-        ).toFixed(2),
-        style: neutralHighlight,
-      },
-    ],
-  };
-  return spendsInsight;
-}
-
-function getTotalsInsight(totals) {
-  const totalsInsight = {
-    icon: "fa-dollar-sign",
-    contents: [
-      {
-        text: "Income",
-        value: totals.income,
-        style: goodHighlight,
-      },
-      {
-        text: "Outgoings",
-        value: totals.outgoings,
-        style: neutralHighlight,
-      },
-    ],
-  };
-  return totalsInsight;
-}
-
-const goodHighlight = "bg-success white";
-const badHighlight = "bg-danger white";
-const neutralHighlight = "bg-lowlight white";
-
-function createInsight(insights) {
-  let insightHTML = "";
-  insightHTML += "<div class='insight'>";
-  insightHTML += "<span class='fas " + insights.icon + " title'></span>";
-
-  insights.contents.forEach((insight) => {
-    insightHTML += "<div>";
-    insightHTML += "<span class='insight-desc' >" + insight.text + "</span>";
-    insightHTML +=
-      "<span class='insight-amount " +
-      insight.style +
-      "'>" +
-      currencySymbol +
-      insight.value +
-      "</span>";
-    insightHTML += "</div>";
-  });
-
-  insightHTML += "</div>";
-  return insightHTML;
-}
+import {
+  getBalanceInsight,
+  getTotalsInsight,
+  createInsight,
+} from "./FinanceUtil/InsightUtils.js";
 
 function updateInsights(insightsDiv, totals, model, payday) {
   document.getElementById(insightsDiv).innerHTML =
@@ -711,9 +696,7 @@ function updateInsights(insightsDiv, totals, model, payday) {
 }
 
 //------------------------------------------------------------------------------//
-//                                                                              //
 //                                   FORMS                                      //
-//                                                                              //
 //------------------------------------------------------------------------------//
 
 function submitAddNewBudgetForm() {
@@ -748,7 +731,7 @@ function submitAddNewBudgetForm() {
   );
 }
 
-function submitAddNewExpenseItemForm() {
+export function submitAddNewExpenseItemForm() {
   const expensesTableId = "expensesTable";
 
   const inputDetails = [
@@ -908,6 +891,13 @@ function submitAddNewIncome() {
   });
 }
 
+import {
+  validateName,
+  validateDate,
+  validateNumber,
+  validateLength,
+} from "./FinanceUtil/ValidationUtil.js";
+
 function validateForm(inputDetails) {
   let validated = true;
   inputDetails.forEach((item) => {
@@ -923,73 +913,6 @@ function validateForm(inputDetails) {
     }
   });
   return validated;
-}
-
-function validateDate(inputId) {
-  const dateBox = document.getElementById(inputId);
-  //test if start date box is empty
-  if (!dateBox.value) {
-    dateBox.classList.add("error");
-    dateBox.placeholder = "Please enter a date";
-    return false;
-  } else {
-    dateBox.classList.remove("error");
-    dateBox.placeholder = "";
-    return true;
-  }
-}
-
-function validateName(inputId) {
-  const textBox = document.getElementById(inputId);
-  //test if name text box is empty
-  if (!textBox.value) {
-    textBox.classList.add("error");
-    textBox.placeholder = "Please enter a name";
-    return false;
-  } else {
-    textBox.classList.remove("error");
-    textBox.placeholder = "Item Name";
-    return true;
-  }
-}
-
-function validateNumber(inputId) {
-  const quantBox = document.getElementById(inputId);
-  //validate quantity
-  if (!/^(?!0\.00)\d{1,}(\.\d\d)?$/.test(quantBox.value)) {
-    quantBox.classList.add("error");
-    quantBox.placeholder = "Please enter number (no symbols/letters)";
-    return false;
-  } else {
-    quantBox.classList.remove("error");
-    quantBox.placeholder = "Quantity...";
-    return true;
-  }
-}
-
-function validateLength(frequencySelectorId, lengthInputId) {
-  if (document.getElementById(frequencySelectorId).value == "Once Only")
-    return true;
-
-  const lengthBox = document.getElementById(lengthInputId);
-  //validate quantity
-  if (!/^\d+$/.test(lengthBox.value)) {
-    lengthBox.classList.add("error");
-    lengthBox.placeholder = "Please enter number (no symbols/letters)";
-    return false;
-  } else {
-    lengthBox.classList.remove("error");
-    lengthBox.placeholder = "Length...";
-    return true;
-  }
-}
-
-function updateLengthVisibility(frequencySelectorId, lengthContainerId) {
-  if (document.getElementById(frequencySelectorId).value == "Once Only") {
-    $("#" + lengthContainerId).fadeOut();
-  } else {
-    $("#" + lengthContainerId).fadeIn();
-  }
 }
 
 //------------------------------------------------------------------------------//
@@ -1139,9 +1062,7 @@ function postRequestToAddIncome(data, callback) {
 }
 
 //------------------------------------------------------------------------------//
-//                                                                              //
-//                                      TABLES                                  //
-//                                                                              //
+//                      HTML TABLE Utility Methods                              //
 //------------------------------------------------------------------------------//
 
 function createSummaryTableHTML(tableTitle, financeItems) {
@@ -1186,97 +1107,8 @@ function createSummaryTableRowHTML(financeItem) {
 }
 
 //------------------------------------------------------------------------------//
-//                                                                              //
-//                                      CHARTS                                  //
-//                                                                              //
+//                                API Call Utility Methods                      //
 //------------------------------------------------------------------------------//
-
-function updateFinanceModelChart(financeModelChartContainer, data) {
-  const myChart = new Chart(financeModelChartContainer, {
-    type: "line",
-    data: data,
-    options: modelLineChartOptions,
-  });
-}
-
-function updatePieChartCanvas(commitmentsChartContainer, items) {
-  const chart = new Chart(commitmentsChartContainer, {
-    type: "pie",
-    data: {
-      labels: items.labels,
-      datasets: items.datasets,
-    },
-    options: defaultPieChartOptions,
-  });
-}
-
-function updateTotalsChart(financeSummaryChartContainer, io) {
-  const myBarChart = new Chart(financeSummaryChartContainer, {
-    type: "horizontalBar",
-    data: {
-      labels: ["Income", "Outgoings"],
-      datasets: [
-        {
-          data: [
-            parseFloat(io.income).toFixed(2),
-            parseFloat(io.outgoings).toFixed(2),
-          ],
-          backgroundColor: ioColours,
-          borderWidth: 1,
-        },
-      ],
-    },
-    options: horizontalBarChartOptions,
-  });
-}
-
-//------------------------------------------------------------------------------//
-//                                                                              //
-//                                UPDATE METHODS                                //
-//                                                                              //
-//------------------------------------------------------------------------------//
-
-export function updateBudgetItems(budgetPieChartId, budgetItemsTableId) {
-  let tableName = "Budgets";
-  const budgetsContext2D = document.getElementById(budgetPieChartId);
-  executeGetRequest(
-    generateFinanceAPIHTML(tableName, now),
-    (success, results) => {
-      if (success) {
-        updatePieChartCanvas(
-          budgetsContext2D,
-          createPieChartDataSet(pieChartDefaults, results)
-        );
-      }
-      $(".flat-loader").remove();
-    }
-  );
-
-  updateTableFromServer(budgetItemsTableId, tableName);
-}
-
-export function updateTableFromServer(DOMSectionId, financeItemType) {
-  executeGetRequest(
-    generateFinanceAPIHTML(financeItemType, now),
-    (success, results) => {
-      if (success) {
-        let newTable = createSummaryTableHTML(financeItemType, results);
-        document.getElementById(DOMSectionId).innerHTML = newTable;
-      }
-      $(".flat-loader").remove();
-    }
-  );
-}
-
-function generateFinanceAPIHTML(itemType, date) {
-  if (!date) {
-    return apiURL + itemType;
-  } else {
-    return (
-      apiURL + itemType + "/" + date.getUTCFullYear() + "/" + date.getUTCMonth()
-    );
-  }
-}
 
 function executeGetRequest(url, callback) {
   let xhr = new XMLHttpRequest();
@@ -1288,6 +1120,16 @@ function executeGetRequest(url, callback) {
     callback(false, {});
   };
   xhr.send();
+}
+
+function generateFinanceAPIURL(itemType, date) {
+  if (!date) {
+    return apiURL + itemType;
+  } else {
+    return (
+      apiURL + itemType + "/" + date.getUTCFullYear() + "/" + date.getUTCMonth()
+    );
+  }
 }
 
 export function setOneHeaderLinkActive_DeactivateOthers(linkId) {

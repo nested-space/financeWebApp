@@ -1,6 +1,31 @@
 <!DOCTYPE html>
 <html>
   <% include partials/meta %>
+  <script type="module">
+    import {
+      setOneHeaderLinkActive_DeactivateOthers,
+      updateExpensesPage,
+      updateExpensesGraphBasedOnDropDownSelection,
+      submitAddNewExpenseItemForm,
+    } from "/js/finance.js";
+
+    setOneHeaderLinkActive_DeactivateOthers("expensesLink");
+    updateExpensesPage();
+
+    //set action for dropdown element
+    document.getElementById("category-select").onchange = () => {
+      updateExpensesGraphBasedOnDropDownSelection(
+        "category-select",
+        "ExpensesModelChart"
+      );
+    };
+
+    //set action for submit button
+    document.getElementById("submitButton").onclick = () => {
+      submitAddNewExpenseItemForm();
+    };
+  </script>
+
   <body>
     <% include partials/header %>
     <div class="main">
@@ -14,7 +39,6 @@
                 </span>
                 <select
                   class="form-control d-inline rounded-0 add-new"
-                  onchange="updateExpensesModel('category-select', 'ExpensesModelChart')"
                   id="category-select"
                 >
                   <!--TODO: Load from DB -->
@@ -73,9 +97,6 @@
               id="name"
               class="add-new"
               placeholder="Expense Name"
-              oninput="validateName('name')"
-              onpropertychange="validateName('name')"
-              onkeyup="validateName('name');"
               required="required"
             />
             <label for="quantity" class="add-new">Quantity:</label>
@@ -85,20 +106,10 @@
               step="0.01"
               class="add-new"
               placeholder="Quantity.."
-              oninput="validateNumber('quantity')"
-              onpropertychange="validateNumber('quantity')"
-              onkeyup="validateNumber('quantity');"
               required="required"
             />
             <label for="date" class="add-new">Start Date:</label>
-            <input
-              id="date"
-              class="add-new"
-              oninput="validateDate('date')"
-              onpropertychange="validateDate('date')"
-              onkeyup="validateDate('date');"
-              type="date"
-            />
+            <input id="date" class="add-new" type="date" />
             <label for="category" class="add-new">Category:</label>
             <select
               id="category"
@@ -122,7 +133,6 @@
             <button
               type="submit"
               id="submitButton"
-              onclick="submitAddNewExpenseItemForm()"
               class="btn btn-primary mt-3 add-new"
             >
               Submit
@@ -146,14 +156,5 @@
         </div>
       </div>
     </div>
-    <script type="module">
-      import {
-        setOneHeaderLinkActive_DeactivateOthers,
-        updateExpensesPage,
-      } from "/js/finance.js";
-
-      setOneHeaderLinkActive_DeactivateOthers("expensesLink");
-      updateExpensesPage();
-    </script>
   </body>
 </html>
