@@ -81,13 +81,20 @@
     </div>
 
     <script type="module">
-      import {
-        setOneHeaderLinkActive_DeactivateOthers,
-        updateTableFromServer,
-      } from "/js/finance.js";
+      import { initialisePage } from "/js/finance.js";
 
-      setOneHeaderLinkActive_DeactivateOthers("incomeLink");
-      updateTableFromServer("tables-section", "Income");
+      const page_config = {
+        header: "incomeLink",
+        charts: [],
+        tables: [
+          {
+            title: "Income",
+            targetid: "tables-section",
+            sources: ["Income"],
+          },
+        ],
+      };
+      initialisePage(page_config);
     </script>
   </body>
 </html>

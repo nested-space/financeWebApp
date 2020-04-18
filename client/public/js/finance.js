@@ -29,6 +29,130 @@ const DELETE_SPAN = "<span class='delete fa fa-trash'></span>";
 
 let config = null;
 let cachedData = null;
+let chartMap = {};
+
+//------------------------------------------------------------------------------//
+//         Whole Page Updates - from Configuration file and Cached Data         //
+//------------------------------------------------------------------------------//
+
+export function initialisePage(configuration) {
+  setConfig(configuration);
+  setOneHeaderLinkActive_DeactivateOthers(config.header || "");
+  createChartsForConfigFile();
+
+  //TODO: replace this with async/await
+  let allUpdates = updateCachedData();
+  Promise.all(allUpdates).then(() => {
+    updatePageFromCachedData();
+  });
+}
+
+export function setOneHeaderLinkActive_DeactivateOthers(linkId) {
+  document.getElementById("modelLink").classList.remove("active");
+  document.getElementById("budgetsLink").classList.remove("active");
+  document.getElementById("expensesLink").classList.remove("active");
+  document.getElementById("incomeLink").classList.remove("active");
+  document.getElementById("commitmentsLink").classList.remove("active");
+  document.getElementById(linkId).classList.add("active");
+}
+
+export function updateCachedData() {
+  if (config == null) {
+    console.error(EMPTY_CONFIG_OBJECT);
+    cachedData = null;
+    return;
+  }
+  cachedData = {};
+  return getSourcesFromConfig().map(function (itemType) {
+    return new Promise(function (resolve, reject) {
+      const url =
+        apiURL + itemType + "/" + now.getFullYear() + "/" + now.getMonth();
+      executeGetRequest(url, function (success, results) {
+        if (success) {
+          cachedData[itemType] = results;
+          resolve();
+        } else {
+          reject();
+        }
+      });
+    });
+  });
+}
+
+export function updatePageFromCachedData() {
+  if (cachedData == null) {
+    console.error(NO_CACHED_DATA);
+  } else {
+    updateTablesFromConfig();
+    updateChartsFromConfig();
+    removePageLoaderIcon();
+  }
+}
+
+function createChartsForConfigFile() {
+  Object.values(chartMap).forEach((chart) => {
+    chart.destroy();
+  });
+  chartMap = {};
+  for (let index = 0; index < config.charts.length; index++) {
+    const currentChart = config.charts[index];
+    const newChart = createChart(
+      document.getElementById(currentChart.targetid),
+      currentChart.type,
+      getChartOptions(currentChart.type)
+    );
+    chartMap[currentChart.targetid] = newChart;
+  }
+}
+
+function getSourcesFromConfig() {
+  let sources = new Set();
+  for (let i = 0; i < config.charts.length; i++) {
+    const currentChart = config.charts[i];
+    for (let j = 0; j < currentChart.sources.length; j++) {
+      const source = currentChart.sources[j];
+      sources.add(source);
+    }
+  }
+  for (let i = 0; i < config.tables.length; i++) {
+    const currentTable = config.tables[i];
+    for (let j = 0; j < currentTable.sources.length; j++) {
+      const source = currentTable.sources[j];
+      sources.add(source);
+    }
+  }
+  return Array.from(sources);
+}
+
+const NO_CACHED_DATA = "No Cached Data. Check Page Configuration Object";
+const EMPTY_CONFIG_OBJECT = "No Config Object. Check Page Configuration Object";
+
+//------------------------------------------------------------------------------//
+//                           Config Utility Methods                             //
+//------------------------------------------------------------------------------//
+
+export function setConfig(newConfig) {
+  if (!configIsValid()) {
+    console.error("Config file not valid");
+    return;
+  }
+  dropUnusedCharts(newConfig);
+  config = newConfig;
+}
+
+function configIsValid(configuration) {
+  let isConfigValid = true;
+  //TODO: determine whether config is valid
+  return isConfigValid;
+}
+
+function dropUnusedCharts() {
+  //TODO: need to identify unused charts and drop them
+}
+
+export function printConfig() {
+  console.log(config);
+}
 
 //------------------------------------------------------------------------------//
 //             Whole Page Updates - to be removed / refactored                  //
@@ -69,8 +193,7 @@ export function updateSummaryPage() {
     .then(function () {
       //1. Update Budgets Pie Chart
       const formattedData = formatDataForPieChart(financeDetails.budgets);
-      console.log(formattedData);
-      updatePieChartCanvas(
+      updatePieChartCanvas_deprecated(
         budgetsContext2D,
         createPieChartDataSet(formattedData, pieChartDefaults)
       );
@@ -79,8 +202,7 @@ export function updateSummaryPage() {
       const formattedCommitments = summariseByCategory(
         financeDetails.commitments
       );
-      console.log(formattedCommitments);
-      updatePieChartCanvas(
+      updatePieChartCanvas_deprecated(
         commitmentsChartContainer,
         createPieChartDataSet(formattedCommitments, pieChartDefaults)
       );
@@ -138,12 +260,12 @@ export function updateExpensesPage() {
     .then(function () {
       //1. Update expenses pie chart
       const formattedData = summariseByCategory(financeDetails.expenses);
-      updatePieChartCanvas(
+      updatePieChartCanvas_deprecated(
         expensesBreakdownChartContainer,
         createPieChartDataSet(formattedData, pieChartDefaults)
       );
 
-      //YUpdate Expenses Line Graph
+      //2. Update Expenses Line Graph
       updateExpensesGraphBasedOnDropDownSelection(
         "category-select",
         "ExpensesModelChart"
@@ -235,26 +357,6 @@ export function updateExpensesGraphBasedOnDropDownSelection(
   });
 }
 
-export function updateBudgetPage(budgetPieChartId, budgetItemsTableId) {
-  let tableName = "Budgets";
-  const budgetsContext2D = document.getElementById(budgetPieChartId);
-  executeGetRequest(
-    generateFinanceAPIURL(tableName, now),
-    (success, results) => {
-      if (success) {
-        const formattedData = formatDataForPieChart(results);
-        updatePieChartCanvas(
-          budgetsContext2D,
-          createPieChartDataSet(formattedData, pieChartDefaults)
-        );
-      }
-      removePageLoaderIcon();
-    }
-  );
-
-  updateTableFromServer(budgetItemsTableId, tableName);
-}
-
 //------------------------------------------------------------------------------//
 //                           Direct Table Update Methods                        //
 //------------------------------------------------------------------------------//
@@ -272,9 +374,49 @@ export function updateTableFromServer(DOMSectionId, financeItemType) {
   );
 }
 
+function updateTablesFromConfig() {
+  for (let i = 0; i < config.tables.length; i++) {
+    const currentTable = config.tables[i];
+    if (currentTable.sources.length > 1) {
+      console.error(
+        "More than one table source not supported for table: " +
+          currentTable.title
+      );
+      continue;
+    }
+
+    let newTable = createSummaryTableHTML(
+      currentTable.sources[0],
+      cachedData[currentTable.sources[0]]
+    );
+    document.getElementById(currentTable.targetid).innerHTML = newTable;
+  }
+}
+
 //------------------------------------------------------------------------------//
 //                           Direct Chart Update Methods                        //
 //------------------------------------------------------------------------------//
+
+function updateChartsFromConfig() {
+  for (let i = 0; i < config.charts.length; i++) {
+    const currentChart = config.charts[i];
+    if (currentChart.sources.length > 1) {
+      console.error(
+        "More than one chart source not supported for chart: " +
+          currentChart.targetid
+      );
+      continue;
+    }
+    //TODO: implement pipelines rather than just data pushing
+    const formattedData = formatDataForPieChart(
+      cachedData[currentChart.sources[0]]
+    );
+    updatePieChartCanvas(
+      chartMap[currentChart.targetid],
+      createPieChartDataSet(formattedData, pieChartDefaults)
+    );
+  }
+}
 
 function updateFinanceModelChart(financeModelChartContainer, data) {
   const myChart = new Chart(financeModelChartContainer, {
@@ -284,7 +426,11 @@ function updateFinanceModelChart(financeModelChartContainer, data) {
   });
 }
 
-function updatePieChartCanvas(commitmentsChartContainer, data) {
+function updatePieChartCanvas(chart, pieChartData) {
+  setChartDatasets(chart, pieChartData.labels, pieChartData.datasets);
+}
+
+function updatePieChartCanvas_deprecated(commitmentsChartContainer, data) {
   const chart = new Chart(commitmentsChartContainer, {
     type: "pie",
     data: data,
@@ -313,12 +459,16 @@ function updateTotalsChart(financeSummaryChartContainer, io) {
   });
 }
 
-function createChart(targetId, chartType, options) {
-  return new Chart(targetId, {
+function createChart(target, chartType, options) {
+  let chart = new Chart(target, {
     type: chartType,
-    data: {},
+    data: {
+      labels: [],
+      datasets: [],
+    },
     options: options,
   });
+  return chart;
 }
 
 function removeAllDataFromChart(chart) {
@@ -329,9 +479,9 @@ function removeAllDataFromChart(chart) {
   chart.update();
 }
 
-function addDataToChart(chart, label, dataset) {
-  chart.data.labels.push(label);
-  chart.data.datasets.push(dataset);
+function setChartDatasets(chart, labels, datasets) {
+  chart.data.labels = labels;
+  chart.data.datasets = datasets;
   chart.update();
 }
 
@@ -763,7 +913,6 @@ function submitAddNewBudgetForm() {
       document.getElementById(
         budgetsTableId
       ).innerHTML = createSummaryTableHTML(tableName, []);
-      console.log(response);
     }
   );
 }
@@ -805,7 +954,6 @@ export function submitAddNewExpenseItemForm() {
 
     function (success, response) {
       updateExpensesPage(expensesTableId);
-      console.log(response);
     }
   );
 }
@@ -877,7 +1025,6 @@ function submitAddNewCommitment() {
     success,
     response
   ) {
-    console.log(response);
     //provide feedback to user and update table.
   });
 }
@@ -923,7 +1070,6 @@ function submitAddNewIncome() {
   }
 
   postRequestToAddIncome(JSON.stringify(income), function (success, response) {
-    console.log(response);
     //provide feedback to user and update table.
   });
 }
@@ -1179,15 +1325,6 @@ function createSummaryTableRowHTML(financeItem) {
     parseFloat(financeItem.quantity).toFixed(2) +
     "</tr>";
   return html;
-}
-
-export function setOneHeaderLinkActive_DeactivateOthers(linkId) {
-  document.getElementById("modelLink").classList.remove("active");
-  document.getElementById("budgetsLink").classList.remove("active");
-  document.getElementById("expensesLink").classList.remove("active");
-  document.getElementById("incomeLink").classList.remove("active");
-  document.getElementById("commitmentsLink").classList.remove("active");
-  document.getElementById(linkId).classList.add("active");
 }
 
 function removePageLoaderIcon() {

@@ -109,28 +109,28 @@
       </div>
     </div>
 
-    <script>
+    <script type="module">
+      import { initialisePage } from "/js/finance.js";
+
       const page_config = {
         header: "budgetsLink",
-        pieChart: {
-          target: "budgetsPieChart",
-          source: "budgets",
-        },
-        tables: {
-          target: "tables-section",
-          source: "budgets",
-        },
+        charts: [
+          {
+            type: "pie",
+            targetid: "budgetPieChart",
+            sources: ["Budgets"],
+            organiseBy: "Name",
+          },
+        ],
+        tables: [
+          {
+            title: "Budgets",
+            targetid: "tables-section",
+            sources: ["Budgets"],
+          },
+        ],
       };
-    </script>
-
-    <script type="module">
-      import {
-        setOneHeaderLinkActive_DeactivateOthers,
-        updateBudgetPage,
-      } from "/js/finance.js";
-
-      setOneHeaderLinkActive_DeactivateOthers("budgetsLink");
-      updateBudgetPage("budgetPieChart", "tables-section");
+      initialisePage(page_config);
     </script>
     <script src="/js/bootstrap.min.js" type="text/javascript"></script>
   </body>
