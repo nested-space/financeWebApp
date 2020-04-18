@@ -24,6 +24,7 @@ import {
 const allBudgets = "All budgets";
 const millisInOneDay = 24 * 60 * 60 * 1000;
 const now = new Date(Date.now());
+now.setUTCMonth(2);
 
 const apiURL = "http://nestedspace.ddns.net:5000/finance/api/";
 const DELETE_SPAN = "<span class='delete fa fa-trash'></span>";
@@ -131,6 +132,7 @@ export function updateExpensesPage() {
 
   Promise.all(promises)
     .then(function () {
+      //1. Update expenses pie chart
       updatePieChartCanvas(
         expensesBreakdownChartContainer,
         createPieChartDataSet(
@@ -139,27 +141,35 @@ export function updateExpensesPage() {
         )
       );
 
+      //YUpdate Expenses Line Graph
       updateExpensesGraphBasedOnDropDownSelection(
         "category-select",
         "ExpensesModelChart"
       );
 
-      let expenses = splitByKey(financeDetails.expenses, "category");
+      //3. Update Expenses Tables
+      let expensesOrganisedByCategory = splitByKey(
+        financeDetails.expenses,
+        "category"
+      );
       let combinedTableHTML = "";
-
-      if (expenses.length > 0) {
-        Object.keys(expenses).forEach((key) => {
-          const newSection = createSummaryTableHTML(key, expenses[key]);
-          combinedTableHTML += newSection;
-        });
-      } else {
+      if (Object.keys(expensesOrganisedByCategory).length == 0) {
         combinedTableHTML = createSummaryTableHTML(
           "No Items Recorded To Date",
           []
         );
+      } else {
+        Object.keys(expensesOrganisedByCategory).forEach((key) => {
+          const newSection = createSummaryTableHTML(
+            key,
+            expensesOrganisedByCategory[key]
+          );
+          combinedTableHTML += newSection;
+        });
       }
       document.getElementById("tables-section").innerHTML = combinedTableHTML;
-      $(".flat-loader").remove();
+
+      removePageLoaderIcon();
     })
     .catch(console.error);
 }
@@ -196,23 +206,10 @@ export function updateExpensesGraphBasedOnDropDownSelection(
       );
     }
 
-    //TODO: extract timeframe determination into separate method
-    let then = new Date(Date.now());
-    then.setMonth(then.getUTCMonth() - 1);
-    then.setDate(30);
-    const difference = Math.round(
-      Math.abs((now.getTime() - then.getTime()) / millisInOneDay)
-    );
-    let startDate = new Date(Date.now());
-    startDate.setDate(startDate.getDate() - difference);
-    let endDate = new Date(Date.now());
-    endDate.setDate(0);
-    endDate.setDate(endDate.getDate() + 30);
-
     let financeModel = createTimeSeriesRelativeData(
       financeDetails,
-      startDate,
-      endDate
+      new Date(now.getUTCFullYear(), now.getUTCMonth(), 0), //last day of last month
+      new Date(now.getUTCFullYear(), now.getUTCMonth() + 1, 0) //last day of this month
     );
     const setPoint = getTotalBudget(financeDetails.budgets);
     const formattedModel = createTimeSeriesCumulativeDataYSetPoint(
@@ -223,7 +220,7 @@ export function updateExpensesGraphBasedOnDropDownSelection(
     const data = {
       labels: formattedModel.labels,
       datasets: [
-        createLineGraphDataSet(formattedModel.setPoint, predictedLineDefaults),
+        createLineGraphDataSet(formattedModel.setPoint, setPointLineDefaults),
         createLineGraphDataSet(
           formattedModel.predicted,
           extrapolatedLineDefaults
@@ -236,11 +233,7 @@ export function updateExpensesGraphBasedOnDropDownSelection(
   });
 }
 
-//------------------------------------------------------------------------------//
-//                           Direct Table Update Methods                        //
-//------------------------------------------------------------------------------//
-
-export function updateBudgetItems(budgetPieChartId, budgetItemsTableId) {
+export function updateBudgetPage(budgetPieChartId, budgetItemsTableId) {
   let tableName = "Budgets";
   const budgetsContext2D = document.getElementById(budgetPieChartId);
   executeGetRequest(
@@ -252,12 +245,16 @@ export function updateBudgetItems(budgetPieChartId, budgetItemsTableId) {
           createPieChartDataSet(pieChartDefaults, results)
         );
       }
-      $(".flat-loader").remove();
+      removePageLoaderIcon();
     }
   );
 
   updateTableFromServer(budgetItemsTableId, tableName);
 }
+
+//------------------------------------------------------------------------------//
+//                           Direct Table Update Methods                        //
+//------------------------------------------------------------------------------//
 
 export function updateTableFromServer(DOMSectionId, financeItemType) {
   executeGetRequest(
@@ -267,7 +264,7 @@ export function updateTableFromServer(DOMSectionId, financeItemType) {
         let newTable = createSummaryTableHTML(financeItemType, results);
         document.getElementById(DOMSectionId).innerHTML = newTable;
       }
-      $(".flat-loader").remove();
+      removePageLoaderIcon();
     }
   );
 }
@@ -295,6 +292,7 @@ function updatePieChartCanvas(commitmentsChartContainer, items) {
   });
 }
 
+//need to generify!
 function updateTotalsChart(financeSummaryChartContainer, io) {
   const myBarChart = new Chart(financeSummaryChartContainer, {
     type: "horizontalBar",
@@ -607,7 +605,7 @@ function summariseByCategory(items) {
 }
 
 function splitByKey(items, key) {
-  let splitItems = [];
+  let splitItems = {};
   items.forEach((item) => {
     if (splitItems.hasOwnProperty(item[key])) {
       splitItems[item[key]].push(item);
@@ -682,7 +680,6 @@ function updateInsights(insightsSectionId, financeDetails, payday) {
     "<div class='insight-container'>" +
     createInsight(getBalanceInsight(financeDetails)) +
     createInsight(getTotalsInsight(totals)) +
-    //createInsight(getSpendsInsight(model)) +
     "</div>";
 }
 
@@ -1142,4 +1139,8 @@ export function setOneHeaderLinkActive_DeactivateOthers(linkId) {
   document.getElementById("incomeLink").classList.remove("active");
   document.getElementById("commitmentsLink").classList.remove("active");
   document.getElementById(linkId).classList.add("active");
+}
+
+function removePageLoaderIcon() {
+  $(".flat-loader").remove();
 }
