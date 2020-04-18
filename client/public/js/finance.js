@@ -5,7 +5,6 @@ import { ioColours } from "./FinanceUtil/DefaultPaletteColours.js";
 import {
   getDaysInMonth,
   getDateString,
-  getShortMonth,
   isSameDate,
   setUTCAndZeroHMS,
 } from "./FinanceUtil/DateUtils.js";
@@ -22,12 +21,14 @@ import {
 } from "./FinanceUtil/ChartJSOptions.js";
 
 const allBudgets = "All budgets";
-const millisInOneDay = 24 * 60 * 60 * 1000;
 const now = new Date(Date.now());
 now.setUTCMonth(2);
 
 const apiURL = "http://nestedspace.ddns.net:5000/finance/api/";
 const DELETE_SPAN = "<span class='delete fa fa-trash'></span>";
+
+let config = null;
+let cachedData = null;
 
 //------------------------------------------------------------------------------//
 //             Whole Page Updates - to be removed / refactored                  //
@@ -67,18 +68,21 @@ export function updateSummaryPage() {
   Promise.all(promises)
     .then(function () {
       //1. Update Budgets Pie Chart
+      const formattedData = formatDataForPieChart(financeDetails.budgets);
+      console.log(formattedData);
       updatePieChartCanvas(
         budgetsContext2D,
-        createPieChartDataSet(pieChartDefaults, financeDetails.budgets)
+        createPieChartDataSet(formattedData, pieChartDefaults)
       );
 
       //2. Update Commitments Pie Chart
+      const formattedCommitments = summariseByCategory(
+        financeDetails.commitments
+      );
+      console.log(formattedCommitments);
       updatePieChartCanvas(
         commitmentsChartContainer,
-        createPieChartDataSet(
-          pieChartDefaults,
-          summariseByCategory(financeDetails.commitments)
-        )
+        createPieChartDataSet(formattedCommitments, pieChartDefaults)
       );
 
       //3. Update Income/Outgoings Bar Chart
@@ -133,12 +137,10 @@ export function updateExpensesPage() {
   Promise.all(promises)
     .then(function () {
       //1. Update expenses pie chart
+      const formattedData = summariseByCategory(financeDetails.expenses);
       updatePieChartCanvas(
         expensesBreakdownChartContainer,
-        createPieChartDataSet(
-          pieChartDefaults,
-          summariseByCategory(financeDetails.expenses)
-        )
+        createPieChartDataSet(formattedData, pieChartDefaults)
       );
 
       //YUpdate Expenses Line Graph
@@ -240,9 +242,10 @@ export function updateBudgetPage(budgetPieChartId, budgetItemsTableId) {
     generateFinanceAPIURL(tableName, now),
     (success, results) => {
       if (success) {
+        const formattedData = formatDataForPieChart(results);
         updatePieChartCanvas(
           budgetsContext2D,
-          createPieChartDataSet(pieChartDefaults, results)
+          createPieChartDataSet(formattedData, pieChartDefaults)
         );
       }
       removePageLoaderIcon();
@@ -281,13 +284,10 @@ function updateFinanceModelChart(financeModelChartContainer, data) {
   });
 }
 
-function updatePieChartCanvas(commitmentsChartContainer, items) {
+function updatePieChartCanvas(commitmentsChartContainer, data) {
   const chart = new Chart(commitmentsChartContainer, {
     type: "pie",
-    data: {
-      labels: items.labels,
-      datasets: items.datasets,
-    },
+    data: data,
     options: defaultPieChartOptions,
   });
 }
@@ -313,32 +313,51 @@ function updateTotalsChart(financeSummaryChartContainer, io) {
   });
 }
 
+function createChart(targetId, chartType, options) {
+  return new Chart(targetId, {
+    type: chartType,
+    data: {},
+    options: options,
+  });
+}
+
+function removeAllDataFromChart(chart) {
+  chart.data.labels.pop();
+  chart.data.datasets.forEach((dataset) => {
+    dataset.data.pop();
+  });
+  chart.update();
+}
+
+function addDataToChart(chart, label, dataset) {
+  chart.data.labels.push(label);
+  chart.data.datasets.push(dataset);
+  chart.update();
+}
+
+function getChartOptions(type) {
+  if (type == "pie") {
+    return defaultPieChartOptions;
+  } else if (type == "line") {
+    return modelLineChartOptions;
+  } else if (type == "horizontalBar") {
+    return horizontalBarChartOptions;
+  } else {
+    return {};
+  }
+}
+
 //------------------------------------------------------------------------------//
 //                            Prepare Data For Graphs                           //
 //------------------------------------------------------------------------------//
 
-function createPieChartDataSet(settings, items) {
-  let formattedItems = formatFinanceForPieChart(items);
-  return {
-    labels: formattedItems.labels,
-    datasets: [
-      {
-        data: formattedItems.data,
-        backgroundColor: settings.backgroundColor,
-        borderWidth: settings.borderWidth,
-      },
-    ],
-  };
-}
-
-function formatFinanceForPieChart(financeItems) {
+function formatDataForPieChart(financeItems) {
   let labels = [];
   let data = [];
   for (let i = 0; i < financeItems.length; i++) {
     labels.push(financeItems[i].name);
     data.push(parseFloat(financeItems[i].quantity).toFixed(2));
   }
-
   return {
     labels: labels,
     data: data,
@@ -366,16 +385,44 @@ function formatMultipleSeriesIntoLineChartData(
   };
 }
 
-function createLineGraphDataSet(data, lineSettings) {
+function createPieChartDataSet(data, settings) {
+  return {
+    labels: data.labels,
+    datasets: [
+      {
+        data: data.data,
+        backgroundColor: settings.backgroundColor,
+        borderWidth: settings.borderWidth,
+      },
+    ],
+  };
+}
+
+function createLineGraphDataSet(data, settings) {
   return {
     data: data,
-    label: lineSettings.label,
-    borderColor: lineSettings.bdColor,
-    borderWidth: lineSettings.bdWidth,
-    borderDash: lineSettings.bdDash,
-    pointRadius: lineSettings.ptSize,
-    backgroundColor: lineSettings.bgColor,
-    fill: lineSettings.fillBoolean,
+    label: settings.label,
+    borderColor: settings.bdColor,
+    borderWidth: settings.bdWidth,
+    borderDash: settings.bdDash,
+    pointRadius: settings.ptSize,
+    backgroundColor: settings.bgColor,
+    fill: settings.fillBoolean,
+  };
+}
+
+function createBarChartDataSet(data, labels, settings) {
+  return {
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          data: data,
+          backgroundColor: settings.colours,
+          borderWidth: settings.borderWidth,
+        },
+      ],
+    },
   };
 }
 
@@ -594,14 +641,16 @@ function summariseByCategory(items) {
       categoryItems[item.category] = item.quantity;
     }
   });
-  const categories = [];
+  const labels = [];
+  let data = [];
   Object.keys(categoryItems).forEach(function (key) {
-    categories.push({
-      name: key,
-      quantity: categoryItems[key],
-    });
+    labels.push(key);
+    data.push(categoryItems[key]);
   });
-  return categories;
+  return {
+    labels: labels,
+    data: data,
+  };
 }
 
 function splitByKey(items, key) {
