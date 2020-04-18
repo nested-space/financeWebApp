@@ -22,7 +22,7 @@ import {
 } from "./FinanceUtil/ChartJSOptions.js";
 
 const allBudgets = "All budgets";
-const oneDay = 24 * 60 * 60 * 1000;
+const millisInOneDay = 24 * 60 * 60 * 1000;
 const now = new Date(Date.now());
 
 const apiURL = "http://nestedspace.ddns.net:5000/finance/api/";
@@ -46,7 +46,6 @@ export function updateSummaryPage() {
     "FinanceModelChart"
   );
   let financeDetails = {};
-  const now = new Date(Date.now());
 
   let promises = ["budgets", "commitments", "expenses", "income"].map(function (
     suffix
@@ -66,27 +65,13 @@ export function updateSummaryPage() {
 
   Promise.all(promises)
     .then(function () {
+      //1. Update Budgets Pie Chart
       updatePieChartCanvas(
         budgetsContext2D,
         createPieChartDataSet(pieChartDefaults, financeDetails.budgets)
       );
 
-      let then = new Date(Date.now());
-      then.setMonth(then.getUTCMonth() - 1);
-      then.setDate(30);
-      const oneDay = 24 * 60 * 60 * 1000;
-      const difference = Math.round(
-        Math.abs((now.getTime() - then.getTime()) / oneDay)
-      );
-
-      let startDate = new Date(Date.now());
-      startDate.setDate(startDate.getDate() - difference);
-      console.log(startDate);
-      let endDate = new Date(Date.now());
-      endDate.setDate(0);
-      endDate.setDate(endDate.getDate() + 30);
-      console.log(endDate);
-
+      //2. Update Commitments Pie Chart
       updatePieChartCanvas(
         commitmentsChartContainer,
         createPieChartDataSet(
@@ -95,48 +80,31 @@ export function updateSummaryPage() {
         )
       );
 
-      let totals = getIOObjectFromBudgetsCommitmentsAndIncome(
-        financeDetails.budgets,
-        financeDetails.commitments,
-        financeDetails.income
-      );
+      //3. Update Income/Outgoings Bar Chart
+      let totals = calculateTotalIncomeAndOutgoings(financeDetails);
       updateTotalsChart(financeSummaryChartContainer, totals);
 
-      let financeModel = createTimeSeriesFinanceModelData(
+      //4. Update Finance Model Chart -> !! improve this by creating individual time series relative data, combining and then making absolute
+      let relativeModel = createTimeSeriesRelativeData(
         financeDetails,
-        startDate,
-        endDate
+        new Date(now.getUTCFullYear(), now.getUTCMonth(), 0), //last day of last month,
+        new Date(now.getUTCFullYear(), now.getUTCMonth() + 1, 0) //last day of this month
       );
 
-      const initialValue = 2413.56;
-      const formattedModel = createTimeSeriesSubtractiveDataWithYSetPoint(
-        financeModel,
-        initialValue
+      const absoluteModel = convertRelativeToAbsolute_Subtractive(
+        relativeModel,
+        getInitialAccountValue()
       );
-      const data = {
-        labels: formattedModel.labels,
-        datasets: [
-          createLineGraphDataSet(
-            formattedModel.predicted,
-            setPointLineDefaults
-          ),
-          createLineGraphDataSet(formattedModel.next, extrapolatedLineDefaults),
-          createLineGraphDataSet(formattedModel.real, realLineDefaults),
-        ],
-      };
 
+      const data = formatMultipleSeriesIntoLineChartData(
+        [absoluteModel.predicted, absoluteModel.next, absoluteModel.real], //time series data
+        [setPointLineDefaults, extrapolatedLineDefaults, realLineDefaults], //line chart series formats
+        absoluteModel.labels
+      );
       updateFinanceModelChart(financeModelChartContainer, data);
 
-      let payday = new Date(Date.now());
-      payday.setDate(25);
-      const insightsDiv = "insights";
-      updateInsights(
-        insightsDiv,
-        totals,
-        formattedModel,
-        financeDetails,
-        payday
-      );
+      //5. Update Insights Section
+      updateInsights("insights", absoluteModel, financeDetails, getPayDay());
     })
     .catch(console.error);
 }
@@ -233,7 +201,7 @@ export function updateExpensesGraphBasedOnDropDownSelection(
     then.setMonth(then.getUTCMonth() - 1);
     then.setDate(30);
     const difference = Math.round(
-      Math.abs((now.getTime() - then.getTime()) / oneDay)
+      Math.abs((now.getTime() - then.getTime()) / millisInOneDay)
     );
     let startDate = new Date(Date.now());
     startDate.setDate(startDate.getDate() - difference);
@@ -241,7 +209,7 @@ export function updateExpensesGraphBasedOnDropDownSelection(
     endDate.setDate(0);
     endDate.setDate(endDate.getDate() + 30);
 
-    let financeModel = createTimeSeriesFinanceModelData(
+    let financeModel = createTimeSeriesRelativeData(
       financeDetails,
       startDate,
       endDate
@@ -255,7 +223,7 @@ export function updateExpensesGraphBasedOnDropDownSelection(
     const data = {
       labels: formattedModel.labels,
       datasets: [
-        createLineGraphDataSet(formattedModel.setPoint, setPointLineDefaults),
+        createLineGraphDataSet(formattedModel.setPoint, predictedLineDefaults),
         createLineGraphDataSet(
           formattedModel.predicted,
           extrapolatedLineDefaults
@@ -379,6 +347,27 @@ function formatFinanceForPieChart(financeItems) {
   };
 }
 
+function formatMultipleSeriesIntoLineChartData(
+  timeSeriesData,
+  lineFormats,
+  labels
+) {
+  let numberOfPairedSeries = Math.min(
+    timeSeriesData.length,
+    lineFormats.length
+  );
+
+  let datasets = [];
+  for (let i = 0; i < numberOfPairedSeries; i++) {
+    datasets.push(createLineGraphDataSet(timeSeriesData[i], lineFormats[i]));
+  }
+
+  return {
+    labels: labels,
+    datasets: datasets,
+  };
+}
+
 function createLineGraphDataSet(data, lineSettings) {
   return {
     data: data,
@@ -396,60 +385,60 @@ function createLineGraphDataSet(data, lineSettings) {
 //                  Curate Data Sets Into Consistent Format                     //
 //------------------------------------------------------------------------------//
 
-function createTimeSeriesFinanceModelData(financeDetails, startDate, endDate) {
-  if (startDate > endDate) return;
+function createTimeSeriesRelativeData(financeDetails, startDate, endDate) {
+  if (startDate > endDate) return {};
 
-  const currentDate = setUTCAndZeroHMS(startDate);
-  const end_date_utc = setUTCAndZeroHMS(endDate);
-  const now = setUTCAndZeroHMS(new Date(Date.now()));
-
-  let financeModel = {};
+  let timeSeriesData = {};
   const budgets = financeDetails.budgets || [];
   const commitments = financeDetails.commitments || [];
   const expenses = financeDetails.expenses || [];
   const income = financeDetails.income || [];
 
-  while (currentDate <= end_date_utc) {
-    financeModel[currentDate] = {};
-    financeModel[currentDate].predicted = 0;
-    financeModel[currentDate].real = 0;
+  const currentDate = setUTCAndZeroHMS(startDate);
+  const lastDateInTimeSeries = setUTCAndZeroHMS(endDate);
+
+  while (currentDate <= lastDateInTimeSeries) {
+    timeSeriesData[currentDate] = {};
+    timeSeriesData[currentDate].predicted = 0;
+    timeSeriesData[currentDate].real = 0;
 
     const budgetCostForDay = getBudgetCostForDay(currentDate, budgets);
-    financeModel[currentDate].predicted =
-      financeModel[currentDate].predicted - budgetCostForDay;
-    if (currentDate > now) {
-      financeModel[currentDate].real =
-        financeModel[currentDate].real - budgetCostForDay;
+    timeSeriesData[currentDate].predicted =
+      timeSeriesData[currentDate].predicted - budgetCostForDay;
+    //test whether day is in past or future
+    if (currentDate > setUTCAndZeroHMS(now)) {
+      timeSeriesData[currentDate].real =
+        timeSeriesData[currentDate].real - budgetCostForDay;
     }
 
     commitments.forEach((item) => {
       if (constraintsFulfilled(item, currentDate)) {
-        financeModel[currentDate].real =
-          financeModel[currentDate].real - item.quantity;
-        financeModel[currentDate].predicted =
-          financeModel[currentDate].predicted - item.quantity;
+        timeSeriesData[currentDate].real =
+          timeSeriesData[currentDate].real - item.quantity;
+        timeSeriesData[currentDate].predicted =
+          timeSeriesData[currentDate].predicted - item.quantity;
       }
     });
 
     expenses.forEach((item) => {
       let itemDate = new Date(item.date);
       if (isSameDate(itemDate, currentDate)) {
-        financeModel[currentDate].real =
-          financeModel[currentDate].real - item.quantity;
+        timeSeriesData[currentDate].real =
+          timeSeriesData[currentDate].real - item.quantity;
       }
     });
 
     income.forEach((item) => {
       if (constraintsFulfilled(item, currentDate)) {
-        financeModel[currentDate].real =
-          financeModel[currentDate].real + item.quantity;
-        financeModel[currentDate].predicted =
-          financeModel[currentDate].predicted + item.quantity;
+        timeSeriesData[currentDate].real =
+          timeSeriesData[currentDate].real + item.quantity;
+        timeSeriesData[currentDate].predicted =
+          timeSeriesData[currentDate].predicted + item.quantity;
       }
     });
     currentDate.setDate(currentDate.getDate() + 1);
   }
-  return financeModel;
+  return timeSeriesData;
 }
 
 function createTimeSeriesCumulativeDataYSetPoint(financeModel, setPointValue) {
@@ -487,8 +476,8 @@ function createTimeSeriesCumulativeDataYSetPoint(financeModel, setPointValue) {
   return formattedModel;
 }
 
-function createTimeSeriesSubtractiveDataWithYSetPoint(
-  financeModel,
+function convertRelativeToAbsolute_Subtractive(
+  relativeTimeSeriesData,
   initialValue
 ) {
   let predicted = [];
@@ -499,28 +488,28 @@ function createTimeSeriesSubtractiveDataWithYSetPoint(
 
   let currentReal = initialValue;
   let currentPredicted = initialValue;
-  Object.keys(financeModel).forEach(function (key) {
+  Object.keys(relativeTimeSeriesData).forEach(function (key) {
     let currentDate = new Date(key);
 
     if (
       currentDate.getDate() == now.getDate() &&
       currentDate.getUTCMonth() == now.getUTCMonth()
     ) {
-      currentReal += financeModel[key].real;
+      currentReal += relativeTimeSeriesData[key].real;
       real.push(parseFloat(currentReal).toFixed(2));
       next.push(parseFloat(currentReal).toFixed(2));
 
-      currentPredicted += financeModel[key].predicted;
+      currentPredicted += relativeTimeSeriesData[key].predicted;
       predicted.push(parseFloat(currentPredicted).toFixed(2));
     } else if (currentDate <= now) {
-      currentReal += financeModel[key].real;
+      currentReal += relativeTimeSeriesData[key].real;
       real.push(parseFloat(currentReal).toFixed(2));
       next.push(null);
 
-      currentPredicted += financeModel[key].predicted;
+      currentPredicted += relativeTimeSeriesData[key].predicted;
       predicted.push(parseFloat(currentPredicted).toFixed(2));
     } else {
-      currentReal += financeModel[key].predicted;
+      currentReal += relativeTimeSeriesData[key].predicted;
       next.push(parseFloat(currentReal).toFixed(2));
     }
     labels.push(getDateString(new Date(key)));
@@ -654,13 +643,13 @@ function getAllItemsWithStatedName(items, itemName) {
   return selectedItems;
 }
 
-function getIOObjectFromBudgetsCommitmentsAndIncome(
-  budgets,
-  commitments,
-  income
-) {
+function calculateTotalIncomeAndOutgoings(financeDetails) {
   let totalIncome = 0;
   let totalOutgoings = 0;
+
+  const budgets = financeDetails.budgets || [];
+  const commitments = financeDetails.commitments || [];
+  const income = financeDetails.income || [];
 
   commitments.forEach((item) => {
     totalOutgoings += item.quantity;
@@ -675,8 +664,8 @@ function getIOObjectFromBudgetsCommitmentsAndIncome(
   });
 
   return {
-    income: parseFloat(totalIncome).toFixed(2),
-    outgoings: parseFloat(totalOutgoings).toFixed(2),
+    income: totalIncome,
+    outgoings: totalOutgoings,
   };
 }
 
@@ -686,10 +675,12 @@ import {
   createInsight,
 } from "./FinanceUtil/InsightUtils.js";
 
-function updateInsights(insightsDiv, totals, model, payday) {
-  document.getElementById(insightsDiv).innerHTML =
+function updateInsights(insightsSectionId, financeDetails, payday) {
+  let totals = calculateTotalIncomeAndOutgoings(financeDetails);
+
+  document.getElementById(insightsSectionId).innerHTML =
     "<div class='insight-container'>" +
-    createInsight(getBalanceInsight(model)) +
+    createInsight(getBalanceInsight(financeDetails)) +
     createInsight(getTotalsInsight(totals)) +
     //createInsight(getSpendsInsight(model)) +
     "</div>";
@@ -1061,6 +1052,44 @@ function postRequestToAddIncome(data, callback) {
   xhr.send(data);
 }
 
+//!! Improve this by calculating initial account value from previously recorded details.
+function getInitialAccountValue() {
+  return 2281.82;
+}
+
+//!! Improve this by getting from server!
+function getPayDay() {
+  let payday = new Date(Date.now());
+  payday.setDate(25);
+  return payday;
+}
+
+//------------------------------------------------------------------------------//
+//                                API Call Utility Methods                      //
+//------------------------------------------------------------------------------//
+
+function executeGetRequest(url, callback) {
+  let xhr = new XMLHttpRequest();
+  xhr.open("GET", url, true);
+  xhr.onload = function () {
+    callback(true, JSON.parse(this.responseText));
+  };
+  xhr.onerror = function () {
+    callback(false, {});
+  };
+  xhr.send();
+}
+
+function generateFinanceAPIURL(itemType, date) {
+  if (!date) {
+    return apiURL + itemType;
+  } else {
+    return (
+      apiURL + itemType + "/" + date.getUTCFullYear() + "/" + date.getUTCMonth()
+    );
+  }
+}
+
 //------------------------------------------------------------------------------//
 //                      HTML TABLE Utility Methods                              //
 //------------------------------------------------------------------------------//
@@ -1104,32 +1133,6 @@ function createSummaryTableRowHTML(financeItem) {
     parseFloat(financeItem.quantity).toFixed(2) +
     "</tr>";
   return html;
-}
-
-//------------------------------------------------------------------------------//
-//                                API Call Utility Methods                      //
-//------------------------------------------------------------------------------//
-
-function executeGetRequest(url, callback) {
-  let xhr = new XMLHttpRequest();
-  xhr.open("GET", url, true);
-  xhr.onload = function () {
-    callback(true, JSON.parse(this.responseText));
-  };
-  xhr.onerror = function () {
-    callback(false, {});
-  };
-  xhr.send();
-}
-
-function generateFinanceAPIURL(itemType, date) {
-  if (!date) {
-    return apiURL + itemType;
-  } else {
-    return (
-      apiURL + itemType + "/" + date.getUTCFullYear() + "/" + date.getUTCMonth()
-    );
-  }
 }
 
 export function setOneHeaderLinkActive_DeactivateOthers(linkId) {
