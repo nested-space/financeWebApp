@@ -15,6 +15,24 @@ router.get('/', (req, res) => {
       .then(budgets => res.json(budgets))
 });
 
+// @route       GET api/budgets/:id
+// @desc        Retrieve all details for a budget item
+// @ access     Public TODO: add authentification
+router.get('/:id', (req, res) => {
+    Budget.findById(req.params.id)
+        .then(budget => {
+		console.log("Budget for " + req.params.id + " is:");
+		console.log(budget);
+            data = [];
+            data.push(budget);
+            res.status(201).json(data);
+        })
+        .catch(() => {
+            res.status(404).json({ success: false });
+        });
+});
+
+
 // @route       GET api/budgets/:year/:month
 // @desc        Fetch all budgets for the year and month specified
 // @access      Public TODO: improve to filter for user
@@ -91,7 +109,6 @@ router.delete('/:id', (req, res) => {
         .catch(err => res.status(404).json({ success: false }));
 });
 
-//TODO: create GET route for api/budgets/:id to get detail for one item
 
 module.exports = router;
 

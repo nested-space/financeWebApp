@@ -13,6 +13,22 @@ router.get('/', (req, res) => {
       .then(commitments => res.json(commitments))
 });
 
+// @route       GET api/commitments/:id
+// @desc        Retrieve all details for a commitment
+// @ access     Public TODO: add authentification
+router.get('/:id', (req, res) => {
+    Commitment.findById(req.params.id)
+        .then(commitment => {
+            data = [];
+            data.push(commitment);
+            res.status(201).json(data);
+        })
+        .catch(() => {
+            res.status(404).json({ success: false });
+        });
+});
+
+
 // @route       GET api/commitments/:year/:month
 // @desc        Fetch all commitments for the year and month specified
 // @access      Public TODO: improve to filter for user
@@ -88,7 +104,5 @@ router.delete('/:id', (req, res) => {
         .then(commtiment => commtiment.remove().then(() => res.json({ success: true })))
         .catch(err => res.status(404).json({ success: false }));
 });
-
-//TODO: create GET route for api/commtiments/:id to get detail for one item
 
 module.exports = router;
