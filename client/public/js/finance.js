@@ -1124,6 +1124,9 @@ function deleteEntry(route){
     console.log(apiURL + route);
 	const xhr = new XMLHttpRequest();
 	xhr.open('DELETE', apiURL + route, true);
+    xhr.onload = function(){
+        location.reload();
+    }
 	xhr.send();
 
 }
