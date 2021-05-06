@@ -21,8 +21,6 @@ router.get('/:id', (req, res) => {
         .then(expense => {
 		console.log("Data for expense " + req.params.id + " is:");
 		console.log(expense);
-            data = [];
-            data.push(expense);
             res.status(201).json(expense);
         })
         .catch(() => {
