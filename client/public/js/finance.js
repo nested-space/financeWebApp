@@ -3,7 +3,7 @@ const allBudgets = 'All budgets';
 const oneDay = 24 * 60 * 60 * 1000;
 const now = new Date(Date.now());
 
-const apiURL = 'http://nestedspace.ddns.net:5000/finance/api/';
+const apiURL = 'http://165.227.229.70:5000/finance/api/';
 const DELETE_SPAN = "<span class='delete fa fa-trash'></span>";
 
 const primary = '#F3D250';
@@ -319,7 +319,6 @@ function createLineGraphDataSet(data, lineSettings) {
         fill: lineSettings.fillBoolean,
     }
 }
-
 
 function updateSummaryPage() {
     const financeSummaryChartContainer = document.getElementById('FinanceIOChart').getContext('2d');
@@ -1118,6 +1117,16 @@ function updateLengthVisibility(frequencySelectorId, lengthContainerId){
 //                                   API CALLS                                  //
 //                                                                              //
 //------------------------------------------------------------------------------//
+
+
+/*  DELETE REQUESTS */
+
+function deleteEntry(route, id){
+	const xhttp = new XMLHttpRequest();
+	xhttp.open('POST', apiURL + route + "/" + id, true);
+	xhr.send();
+
+}
 
 function getRequestToAPI(suffix, callback){
     let xhr = new XMLHttpRequest();
