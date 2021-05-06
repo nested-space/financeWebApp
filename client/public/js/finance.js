@@ -4,7 +4,6 @@ const oneDay = 24 * 60 * 60 * 1000;
 const now = new Date(Date.now());
 
 const apiURL = 'http://165.227.229.70:5000/finance/api/';
-const DELETE_SPAN = "<span class='delete fa fa-trash'></span>";
 
 const primary = '#F3D250';
 const primary_md = '#F6DF82'; 
@@ -211,7 +210,7 @@ function updateExpensesPage() {
             expenses = splitByKey(financeDetails.expenses, 'category');
             let sections = '';
             Object.keys(expenses).forEach((key) =>{
-                const newSection = createDefaultWidthWidgetSectionHTML(createSummaryTableHTML(key, expenses[key]));
+                const newSection = createDefaultWidthWidgetSectionHTML(createSummaryTableHTML(key, expenses[key], 'expenses'));
                 sections += newSection;
                 $(".flat-loader").remove();
             }); 
@@ -1121,9 +1120,10 @@ function updateLengthVisibility(frequencySelectorId, lengthContainerId){
 
 /*  DELETE REQUESTS */
 
-function deleteEntry(route, id){
-	const xhttp = new XMLHttpRequest();
-	xhttp.open('POST', apiURL + route + "/" + id, true);
+function deleteEntry(route){
+    console.log(apiURL + route);
+	const xhr = new XMLHttpRequest();
+	xhr.open('DELETE', apiURL + route, true);
 	xhr.send();
 
 }
@@ -1283,24 +1283,24 @@ const expensesTableId = 'expensesTable';
 
 function updateBudgetsTable(tableId, budgets){
    console.log(tableId);
-    document.getElementById(tableId).innerHTML = createSummaryTableHTML("Budgets", budgets);
+    document.getElementById(tableId).innerHTML = createSummaryTableHTML("Budgets", budgets, 'budgets');
     $(".flat-loader").remove();
 }
 
 
 function updateExpensesTableHTML(tableId, expenses){
-   document.getElementById(tableId).innerHTML = createSummaryTableHTML("Expenses", expenses);
+   document.getElementById(tableId).innerHTML = createSummaryTableHTML("Expenses", expenses, 'expenses');
     $(".flat-loader").remove();
 
 }
 
 function updateCommitmentsTableHTML(tableId, commitments){
-   document.getElementById(tableId).innerHTML = createSummaryTableHTML("Commitments", commitments);
+   document.getElementById(tableId).innerHTML = createSummaryTableHTML("Commitments", commitments, 'commitments');
     $(".flat-loader").remove();
 }
 
 function updateIncomeTableHTML(tableId, incomeStreams){
-    document.getElementById(tableId).innerHTML = createSummaryTableHTML("Income", incomeStreams);
+    document.getElementById(tableId).innerHTML = createSummaryTableHTML("Income", incomeStreams, 'income');
     $(".flat-loader").remove();
 }
 
@@ -1309,11 +1309,11 @@ function createDefaultWidthWidgetSectionHTML(htmlContent){
     return "<div class='col-12 col-md-6 col-xl-4'><div class='p-3 mt-5 grey-bg'>" + htmlContent + "</div></div>";
 }
 
-function createSummaryTableHTML(title, items){
+function createSummaryTableHTML(title, items, route){
     let body = "<div style='max-height: 400px; overflow:auto; min-height: 400px; width: 100%; background: white;'><table>";
     let totalQuantity = 0;
     for(let i = 0; i < items.length; i++){
-        body += createSummaryTableRowHTML(items[i]);
+        body += createSummaryTableRowHTML(items[i], route);
         totalQuantity += items[i].quantity;
     }
     body += "</table></div>";
@@ -1331,10 +1331,10 @@ function createSummaryTableHTML(title, items){
     return html;
 }
 
-function createSummaryTableRowHTML(item){
+function createSummaryTableRowHTML(item, route){
     let html = "";
     html += "<tr>";
-    html += "<td>" + DELETE_SPAN;
+    html += "<td>" + createDeleteSpan(route + "/" +  item._id);
     
     if(item.name.length > 20){
        html += item.name.slice(0, 17) + "...";
@@ -1345,6 +1345,10 @@ function createSummaryTableRowHTML(item){
     html += "</td>";
     html += "<td class='money-column'>" + currencySymbol + parseFloat(item.quantity).toFixed(2) + "</tr>";
     return html;
+}
+
+function createDeleteSpan(deleteRoute){
+    return "<span class='delete fa fa-trash' id='" + deleteRoute + "' "  +  "onClick=deleteEntry('" + deleteRoute + "')"  + "></span>";
 }
 
 
@@ -1459,7 +1463,7 @@ function updateCommitmentsTable(tableId) {
             commitments = splitByRecurrence(financeDetails.commitments);
             let sections = '';
             Object.keys(commitments).forEach((key) =>{
-                const newSection = createDefaultWidthWidgetSectionHTML(createSummaryTableHTML(key, commitments[key]));
+                const newSection = createDefaultWidthWidgetSectionHTML(createSummaryTableHTML(key, commitments[key], 'commitments'));
                 sections += newSection;
                 $(".flat-loader").remove();
             }); 
