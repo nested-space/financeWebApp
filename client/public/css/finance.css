@@ -157,6 +157,15 @@ td .delete{
     transition: 0.2s;
 }
 
+td .delete:active{
+    background: forestgreen;
+    transition: unset;
+}
+
+td .delete:hover{
+    background: chocolate;
+}
+
 td:hover .delete {
     width: 40px;
     margin-left: 5px;
