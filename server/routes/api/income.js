@@ -18,7 +18,7 @@ router.get('/', (req, res) => {
 // @desc        Retrieve all details for a income
 // @ access     Public TODO: add authentification
 router.get('/:id', (req, res) => {
-    Income.findById(req.params.id)
+    Income.findById(req.params.id).exec()
         .then(income => {
             data = [];
             data.push(income);
@@ -38,14 +38,19 @@ router.get('/:year/:month', (req, res) => {
             data = [];
             incomes.map((income) => {
                 let effective = true;
-                if(income.effective.stop !== undefined){
-                    const stop = new Date(income.effective.stop);
-                    if (stop.getUTCFullYear() < req.params.year){
-                        effective = false;
-                    } else if(stop.getUTCMonth() < req.params.month) {
-                        effective = false;
-                    }
-                }
+		if(income.effective.stop !== undefined){
+		    const stop = new Date(income.effective.stop);
+		    stopMonth = req.params.month - 1; //account for 0-indexed months in getUTCMonth()
+		    if (stop.getUTCFullYear() < req.params.year){
+		        effective = false;
+		    } else if((stop.getUTCFullYear() == req.params.year) && (stop.getUTCMonth() < stopMonth)) {
+		        effective = false;
+		    }
+		
+		    if((stopMonth < 0) || (stopMonth > 11)) effective = false;
+		}
+
+
 
                 const from = new Date(income.effective.from || Date.now());
                 if(from.getUTCFullYear() > req.params.year) {

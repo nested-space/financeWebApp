@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
 // @desc        Retrieve all details for an expense
 // @ access     Public TODO: add authentification
 router.get('/:id', (req, res) => {
-    Expense.findById(req.params.id)
+    Expense.findById(req.params.id).exec()
         .then(expense => {
 		console.log("Data for expense " + req.params.id + " is:");
 		console.log(expense);
